@@ -1,0 +1,20 @@
+{
+  "name": "j-learn-integrated",
+  "version": "1.0.0",
+  "description": "Jayakarta Academic Learning System — STMIK Jayakarta Integrated Academic Ecosystem",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=apps/lms\" \"npm run dev --workspace=apps/siakad\"",
+    "dev:lms": "npm run dev --workspace=apps/lms",
+    "dev:siakad": "npm run dev --workspace=apps/siakad",
+    "build": "npm run build --workspace=apps/lms && npm run build --workspace=apps/siakad",
+    "lint": "npm run lint --workspace=apps/lms && npm run lint --workspace=apps/siakad"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "date-fns": "^4.3.0"
+  }
+}
