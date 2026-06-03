@@ -838,13 +838,13 @@ export default function SiakadClientDashboard({
 
         {/* Brand Crest Header */}
         <div className="relative z-10 flex items-center gap-3 px-6 h-[100px] bg-white dark:bg-[#080B11] dark:border-white/5 shrink-0 border-b border-slate-200 shadow-sm transition-colors">
-          <div className="relative w-[64px] h-[64px] shrink-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-[40px] h-[40px] shrink-0 flex items-center justify-center pointer-events-none">
             <Image
               src="/logo-stmik-jayakarta.webp"
               alt="STMIK Jayakarta"
               fill
-              sizes="64px"
-              className="object-contain drop-shadow-xl"
+              sizes="40px"
+              className="object-contain drop-shadow-md"
               priority
             />
           </div>
