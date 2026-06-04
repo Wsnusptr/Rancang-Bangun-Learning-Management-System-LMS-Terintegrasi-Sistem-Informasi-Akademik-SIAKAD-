@@ -50,7 +50,7 @@ export default function MobileSubHeader() {
         if (isVisibleRef.current) {
           setIsVisible(false)
         }
-      }, 5000)
+      }, 2500) // Changed from 5000 to 2500
     }
 
     const handleScroll = () => {
@@ -99,14 +99,19 @@ export default function MobileSubHeader() {
   if (pathname.includes('/class/')) return null
 
   return (
-    <div 
-      className={`md:hidden transition-all duration-300 ease-in-out shrink-0 relative z-[100] ${
-        isVisible 
-          ? 'max-h-24 opacity-100 translate-y-0 pt-4 px-5 pb-2 overflow-visible' 
-          : 'max-h-0 opacity-0 -translate-y-4 pt-0 px-5 pb-0 overflow-hidden pointer-events-none'
-      }`}
-    >
-      <div className="flex flex-col select-none">
+    <>
+      {/* Spacer to prevent layout shift glitch */}
+      <div className="md:hidden h-[54px] shrink-0" />
+
+      {/* Animated absolute header */}
+      <div 
+        className={`md:hidden absolute w-full top-14 left-0 transition-all duration-300 ease-in-out z-30 bg-slate-50 dark:bg-[#080B11] shadow-sm dark:shadow-white/5 ${
+          isVisible 
+            ? 'opacity-100 translate-y-0 pt-4 px-5 pb-2' 
+            : 'opacity-0 -translate-y-[120%] pt-4 px-5 pb-2 pointer-events-none'
+        }`}
+      >
+        <div className="flex flex-col select-none">
         <div className="flex items-center justify-between mb-2">
           <TopbarGreeting name={userName} />
           <div className="flex items-center gap-2">
@@ -118,5 +123,6 @@ export default function MobileSubHeader() {
         <div className="h-px bg-gradient-to-r from-slate-200 via-slate-200 to-transparent dark:from-slate-800 dark:via-slate-800 w-3/4 opacity-70"></div>
       </div>
     </div>
+    </>
   )
 }

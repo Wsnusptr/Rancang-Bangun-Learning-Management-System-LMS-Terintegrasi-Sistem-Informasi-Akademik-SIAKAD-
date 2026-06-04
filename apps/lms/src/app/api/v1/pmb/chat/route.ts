@@ -71,6 +71,49 @@ ATURAN FORMATTING JAWABAN (SANGAT PENTING UNTUK TAMPILAN MOBILE):
     const systemInstruction = "Kamu adalah AI Asisten PMB (Penerimaan Mahasiswa Baru) STMIK Jayakarta. Nama kamu adalah 'Sobat Camaba'. Tugasmu adalah membantu calon mahasiswa baru dengan memberikan informasi seputar pendaftaran, kampus, jurusan, biaya, dan fasilitas di STMIK Jayakarta secara akurat berdasarkan data sistem. Jangan menyebarkan informasi palsu atau berasumsi jika data tidak ada di referensimu. Jangan menyebutkan bahwa kamu dari Google, OpenAI, atau Gemini, cukup katakan kamu adalah asisten dari STMIK Jayakarta.\n\n" + pmbContext
 
     
+    const isGroq = apiKey.startsWith('gsk_')
+    const isOpenAI = apiKey.startsWith('sk-')
+
+    if (isGroq || isOpenAI) {
+      // Use OpenAI Compatible Format
+      const apiUrl = isGroq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions'
+      const openAIMessages = [
+        { role: 'system', content: systemInstruction },
+        ...(history || []).map((msg: any) => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })),
+        { role: 'user', content: prompt }
+      ]
+
+      const payload = {
+        model: isGroq ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 1024
+      }
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error('OpenAI/Groq API Error:', errorData)
+        return errorResponse('Gagal menghubungi layanan AI.', 500)
+      }
+
+      const data = await res.json()
+      const textResponse = data.choices?.[0]?.message?.content || 'Maaf, saya tidak bisa memproses permintaan Anda saat ini.'
+      return successResponse({ text: textResponse })
+    }
+
+    // Default to Gemini format
     // Format history
     if (history && Array.isArray(history)) {
         history.forEach((msg: any) => {

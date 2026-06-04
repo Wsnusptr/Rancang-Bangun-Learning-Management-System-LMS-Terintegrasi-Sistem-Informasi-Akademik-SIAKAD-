@@ -24,8 +24,11 @@ export default function LoginClient() {
 
         const handleResize = () => {
             if (!canvas) return
-            width = canvas.width = window.innerWidth
-            height = canvas.height = window.innerHeight
+            // Only update on width change to prevent mobile scroll glitch
+            if (window.innerWidth !== width) {
+                width = canvas.width = window.innerWidth
+                height = canvas.height = window.innerHeight
+            }
         }
         window.addEventListener('resize', handleResize)
 
