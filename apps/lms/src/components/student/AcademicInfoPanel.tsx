@@ -213,7 +213,7 @@ export default function AcademicInfoPanel() {
 
   return (
     <>
-    <div className="space-y-5 print:hidden">
+    <div className="bg-white dark:bg-[#121B2E] p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-5 print:hidden relative z-10">
       {/* 1. Header Page */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>

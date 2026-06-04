@@ -252,7 +252,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-5 animate-fade-in">
+    <div className="max-w-2xl bg-white/90 dark:bg-[#121B2E]/90 backdrop-blur-md p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-5 animate-fade-in relative z-10">
       {/* Page Header */}
       <div>
         <h1 className="text-sm font-semibold text-slate-800 dark:text-white">Profil</h1>

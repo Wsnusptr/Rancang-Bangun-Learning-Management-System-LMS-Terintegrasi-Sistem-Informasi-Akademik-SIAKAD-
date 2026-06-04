@@ -94,7 +94,7 @@ export default function StudentTodoList() {
   const classNames = Object.keys(todos)
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto py-4 sm:py-8 px-4 font-sans">
+    <div className="space-y-6 max-w-3xl mx-auto py-5 sm:py-8 px-5 sm:px-8 bg-white/90 dark:bg-[#121B2E]/90 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 font-sans relative z-10">
       <div className="border-b-2 border-slate-900 pb-3 dark:border-white">
         <h1 className="text-sm sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Daftar Tugas</h1>
         <p className="text-[9px] sm:text-[11px] text-slate-500 uppercase tracking-widest font-bold mt-1 dark:text-gray-400">
