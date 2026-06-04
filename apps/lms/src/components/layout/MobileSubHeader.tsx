@@ -101,7 +101,7 @@ export default function MobileSubHeader() {
   return (
     <>
       {/* Spacer to prevent layout shift glitch (Content starts here, pushing actual content down just enough) */}
-      <div className="md:hidden h-[45px] shrink-0 w-full" />
+      <div className="md:hidden h-[75px] shrink-0 w-full" />
 
       {/* Animated absolute header */}
       <div 
