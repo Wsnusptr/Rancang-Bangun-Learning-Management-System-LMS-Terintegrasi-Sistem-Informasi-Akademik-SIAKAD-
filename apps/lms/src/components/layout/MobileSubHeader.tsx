@@ -100,15 +100,15 @@ export default function MobileSubHeader() {
 
   return (
     <>
-      {/* Spacer to prevent layout shift glitch */}
-      <div className="md:hidden h-[54px] shrink-0" />
+      {/* Spacer to prevent layout shift glitch (Content starts here, pushing actual content down just enough) */}
+      <div className="md:hidden h-[30px] shrink-0 w-full" />
 
       {/* Animated absolute header */}
       <div 
-        className={`md:hidden absolute w-full top-14 left-0 transition-all duration-300 ease-in-out z-30 bg-slate-50 dark:bg-[#080B11] shadow-sm dark:shadow-white/5 ${
+        className={`md:hidden absolute w-full top-0 left-0 transition-transform duration-300 ease-in-out z-30 bg-slate-50 dark:bg-[#080B11] shadow-sm dark:shadow-white/5 ${
           isVisible 
-            ? 'opacity-100 translate-y-0 pt-4 px-5 pb-2' 
-            : 'opacity-0 -translate-y-[120%] pt-4 px-5 pb-2 pointer-events-none'
+            ? 'translate-y-0 pt-3 px-5 pb-2' 
+            : '-translate-y-full pt-3 px-5 pb-2 pointer-events-none'
         }`}
       >
         <div className="flex flex-col select-none">

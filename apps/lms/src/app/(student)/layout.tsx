@@ -34,8 +34,8 @@ export default async function StudentLayout({
       <Sidebar role={user.role} name={user.name} avatarUrl={user.avatarUrl} isGuest={isGuest} />
       <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-[#080B11] transition-colors">
         <Topbar userId={user.id} name={user.name} role={user.role} isGuest={isGuest} />
-        <MobileSubHeader />
         <main className="flex-1 overflow-y-auto p-5 sm:p-6 focus:outline-none relative">
+          <MobileSubHeader />
           <Suspense fallback={
             <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-[#080B11] transition-colors">
                <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600 dark:border-slate-800 dark:border-t-blue-500"></div>
