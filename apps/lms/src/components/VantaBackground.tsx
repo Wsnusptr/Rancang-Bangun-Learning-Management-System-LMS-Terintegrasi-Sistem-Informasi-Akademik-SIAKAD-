@@ -82,7 +82,7 @@ export default function VantaBackground() {
   return (
     <div 
       ref={vantaRef} 
-      className="fixed inset-0 z-0 pointer-events-none opacity-40 dark:opacity-60"
+      className="fixed inset-0 z-[-1] pointer-events-none opacity-40 dark:opacity-60"
       style={{ width: '100vw', height: '100vh' }}
     />
   )
