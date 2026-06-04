@@ -68,9 +68,7 @@ export default function VantaBackground() {
       }
     }
 
-    setTimeout(() => {
-        initVanta()
-    }, 500)
+    initVanta()
 
     return () => {
       if (vantaEffect) {
