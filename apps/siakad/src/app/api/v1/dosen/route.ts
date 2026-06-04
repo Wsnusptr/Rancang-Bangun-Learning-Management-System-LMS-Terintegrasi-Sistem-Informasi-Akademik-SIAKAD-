@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Create user account in Supabase Auth securely
-    const defaultPassword = password || 'DosenJayakarta2026!'
+    const defaultPassword = password || nip || nidn || 'DosenJayakarta2026!'
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: defaultPassword,

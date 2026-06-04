@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
 
     // 2. If userId is provided, update the LMS profiles record & perform auto-enrollment
     if (userId) {
+      const newEmail = `${nim}@stmik.jayakarta.ac.id`
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
           name: fullName,
           phone: phone,
           address: address,
+          email: newEmail,
           study_program_id: programId,
           role: 'student',
           enrollment_year: new Date().getFullYear(),
@@ -78,9 +80,9 @@ export async function POST(request: NextRequest) {
         console.error('[SIAKAD Verify PMB] Failed to update LMS profile:', profileError)
       } else {
         // Automatically update login email to NIM-based email
-        const newEmail = `${nim}@stmik.jayakarta.ac.id`
         const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
           email: newEmail,
+          password: nim,
           email_confirm: true
         })
         if (authError) {

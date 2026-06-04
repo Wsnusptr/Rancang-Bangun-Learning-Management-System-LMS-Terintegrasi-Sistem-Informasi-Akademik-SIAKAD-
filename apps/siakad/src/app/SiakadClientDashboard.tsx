@@ -8,7 +8,7 @@ import {
   School, Database, Users, GraduationCap, CheckCircle2,
   Clock, AlertTriangle, FileSpreadsheet, History, Search,
   HelpCircle, RefreshCw, BarChart2, Calendar, FileText,
-  UserCheck, BookOpen, AlertCircle, Plus, Trash2, Edit2, Edit3,
+  UserCheck, BookOpen, AlertCircle, Plus, Trash2, Edit2, Edit3, Pencil, Save,
   ExternalLink, LogOut, Megaphone, Check, X, ShieldAlert,
   Menu, Info, Video, Image as ImageIcon, Sparkles, PlusCircle, ArrowRight, Loader2, LayoutDashboard, ChevronLeft, ChevronRight
 } from 'lucide-react'
@@ -114,8 +114,15 @@ export default function SiakadClientDashboard({
     }
   }, [activeTab])
 
+  const [greeting, setGreeting] = useState('Selamat pagi')
   useEffect(() => {
     setEnrollmentsList(initialEnrollments || [])
+    
+    const hour = new Date().getHours()
+    if (hour < 10) setGreeting('Selamat pagi')
+    else if (hour < 15) setGreeting('Selamat siang')
+    else if (hour < 18) setGreeting('Selamat sore')
+    else setGreeting('Selamat malam')
   }, [initialEnrollments])
 
   // Student Edit Modal States
@@ -141,6 +148,19 @@ export default function SiakadClientDashboard({
   const [modalError, setModalError] = useState<string | null>(null)
   const [modalSuccess, setModalSuccess] = useState<string | null>(null)
   const [verifying, setVerifying] = useState(false)
+
+  // PMB Edit Modal States
+  const [showPmbEditModal, setShowPmbEditModal] = useState(false)
+  const [selectedPmbEdit, setSelectedPmbEdit] = useState<any | null>(null)
+  const [pmbEditForm, setPmbEditForm] = useState({
+    fullName: '',
+    phone: '',
+    dateOfBirth: '',
+    address: '',
+    intendedProgram: ''
+  })
+  const [pmbEditSubmitting, setPmbEditSubmitting] = useState(false)
+  const [pmbEditError, setPmbEditError] = useState<string | null>(null)
 
   // Announcements CRUD Modal States
   const [showAnnModal, setShowAnnModal] = useState(false)
@@ -493,12 +513,78 @@ export default function SiakadClientDashboard({
     }
   }
 
-  const handleDeletePmb = async (id: string) => {
+  const handleOpenPmbEditModal = (pmb: any) => {
+    setSelectedPmbEdit(pmb)
+    setPmbEditForm({
+      fullName: pmb.name || pmb.full_name || '',
+      phone: pmb.phone || '',
+      dateOfBirth: pmb.date_of_birth || '',
+      address: pmb.address || '',
+      intendedProgram: pmb.intended_program || ''
+    })
+    setPmbEditError(null)
+    setShowPmbEditModal(true)
+  }
+
+  const handleEditPmbSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pmbEditForm.fullName.trim()) {
+      setPmbEditError('Nama lengkap wajib diisi.')
+      return
+    }
+
+    setPmbEditSubmitting(true)
+    setPmbEditError(null)
     try {
-      // In a real app, you might want a dedicated API for this.
-      // For now, let's use supabase directly since we have the client here (if it has permissions).
-      // Or we can add it to an API route later. I'll just show the alert for now.
-      showAlert('error', 'Penghapusan PMB belum diimplementasi di API.');
+      const isUUID = selectedPmbEdit.id && selectedPmbEdit.id.length === 36
+      const payload = {
+        userId: isUUID ? selectedPmbEdit.id : null,
+        email: selectedPmbEdit.email,
+        fullName: pmbEditForm.fullName,
+        phone: pmbEditForm.phone,
+        dateOfBirth: pmbEditForm.dateOfBirth,
+        address: pmbEditForm.address,
+        intendedProgram: pmbEditForm.intendedProgram
+      }
+
+      const res = await fetch('/api/v1/pmb', {
+        method: 'PUT',
+        headers: authHeaders,
+        body: JSON.stringify(payload)
+      })
+
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || 'Gagal memperbarui data PMB')
+
+      showAlert('success', 'Data Calon Mahasiswa (PMB) berhasil diperbarui.')
+      setShowPmbEditModal(false)
+      router.refresh()
+    } catch (err: any) {
+      setPmbEditError(err.message)
+    } finally {
+      setPmbEditSubmitting(false)
+    }
+  }
+
+  const handleDeletePmb = async (pmb: any) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus data calon mahasiswa ${pmb.name || pmb.full_name}? Akun loginnya juga akan terhapus jika ada.`)) return
+
+    try {
+      const isUUID = pmb.id && pmb.id.length === 36
+      const searchParams = new URLSearchParams()
+      if (isUUID) searchParams.append('userId', pmb.id)
+      searchParams.append('email', pmb.email)
+
+      const res = await fetch(`/api/v1/pmb?${searchParams.toString()}`, {
+        method: 'DELETE',
+        headers: authHeaders
+      })
+      
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || 'Gagal menghapus PMB')
+
+      showAlert('success', 'Calon Mahasiswa (PMB) berhasil dihapus permanen.')
+      router.refresh()
     } catch (err: any) {
       showAlert('error', `Gagal menghapus PMB: ${err.message}`);
     }
@@ -1022,8 +1108,8 @@ export default function SiakadClientDashboard({
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:block py-1">
-              <h1 className="text-xl font-black text-blue-950 dark:text-white tracking-tight leading-none">
-                Selamat pagi jayakarta
+              <h1 className="text-xl font-black text-blue-950 dark:text-white tracking-tight leading-none capitalize">
+                {greeting} jayakarta
               </h1>
               <p className="text-[11px] font-medium text-slate-500 dark:text-gray-400 mt-1.5">
                 Semangat beraktivitas!!
@@ -1360,12 +1446,27 @@ export default function SiakadClientDashboard({
                               Pending Verifikasi
                             </span>
                           </td>
-                          <td className={`${TD_CELL} text-right`}>
+                          <td className={`${TD_CELL} text-right space-x-1`}>
                             <button
                               onClick={() => handleOpenPmbModal(pmb)}
-                              className="inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md font-medium text-[10px] transition-all shadow-sm whitespace-nowrap"
+                              className="inline-flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-2 py-1.5 rounded-md font-medium text-[10px] transition-all shadow-sm whitespace-nowrap"
+                              title="Verifikasi & Buat NIM"
                             >
-                              Verifikasi & Buat NIM
+                              Verifikasi
+                            </button>
+                            <button
+                              onClick={() => handleOpenPmbEditModal(pmb)}
+                              className="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-md font-medium text-[10px] transition-all shadow-sm"
+                              title="Edit PMB"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePmb(pmb)}
+                              className="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 px-2 py-1.5 rounded-md font-medium text-[10px] transition-all shadow-sm"
+                              title="Hapus PMB"
+                            >
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           </td>
                         </tr>
@@ -2437,6 +2538,111 @@ export default function SiakadClientDashboard({
 
         </main>
       </div>
+
+      {/* PMB Edit Modal */}
+      {showPmbEditModal && selectedPmbEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#0A0D14] w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <Pencil className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="font-semibold text-slate-800 dark:text-white">Edit Calon Mahasiswa</h3>
+              </div>
+              <button onClick={() => setShowPmbEditModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto">
+              {pmbEditError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg text-sm text-red-600 dark:text-red-400 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <p>{pmbEditError}</p>
+                </div>
+              )}
+
+              <form id="pmb-edit-form" onSubmit={handleEditPmbSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Nama Lengkap *</label>
+                  <input
+                    type="text"
+                    required
+                    value={pmbEditForm.fullName}
+                    onChange={(e) => setPmbEditForm({ ...pmbEditForm, fullName: e.target.value })}
+                    className="w-full bg-white dark:bg-[#111520] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Program Studi *</label>
+                    <select
+                      value={pmbEditForm.intendedProgram}
+                      onChange={(e) => setPmbEditForm({ ...pmbEditForm, intendedProgram: e.target.value })}
+                      className="w-full bg-white dark:bg-[#111520] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">-- Pilih Prodi --</option>
+                      {programsCatalog.map((prog: any) => (
+                        <option key={prog.id} value={prog.code}>{prog.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">No. HP / WA</label>
+                    <input
+                      type="text"
+                      value={pmbEditForm.phone}
+                      onChange={(e) => setPmbEditForm({ ...pmbEditForm, phone: e.target.value })}
+                      className="w-full bg-white dark:bg-[#111520] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Tanggal Lahir</label>
+                  <input
+                    type="date"
+                    value={pmbEditForm.dateOfBirth}
+                    onChange={(e) => setPmbEditForm({ ...pmbEditForm, dateOfBirth: e.target.value })}
+                    className="w-full bg-white dark:bg-[#111520] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Alamat</label>
+                  <textarea
+                    rows={2}
+                    value={pmbEditForm.address}
+                    onChange={(e) => setPmbEditForm({ ...pmbEditForm, address: e.target.value })}
+                    className="w-full bg-white dark:bg-[#111520] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
+                </div>
+              </form>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowPmbEditModal(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                form="pmb-edit-form"
+                disabled={pmbEditSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+              >
+                {pmbEditSubmitting ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> : <Save className="w-4 h-4" />}
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4. MODAL: VERIFY PMB & ASSIGN NIM */}
       {showPmbModal && selectedPmb && (
