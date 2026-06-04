@@ -63,7 +63,7 @@ export default function LecturerAnnouncementsPanel({ tab }: LecturerAnnouncement
   const t = titles[tab]
 
   return (
-    <div className="space-y-4">
+    <div className="bg-white/90 dark:bg-[#121B2E]/90 backdrop-blur-md p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 relative z-10">
       <div>
         <h1 className="text-sm font-semibold text-slate-800 dark:text-white">{t.h}</h1>
         <p className="text-[10px] text-slate-500 mt-0.5">{t.sub}</p>

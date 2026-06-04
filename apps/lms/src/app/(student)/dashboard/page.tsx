@@ -156,7 +156,7 @@ export default function StudentDashboard() {
 
   if (isGuest) {
     return (
-      <div className="pb-8 space-y-4 md:space-y-6 mt-0 md:mt-2">
+      <div className="bg-white/90 dark:bg-[#121B2E]/90 backdrop-blur-md p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 md:space-y-6 mt-0 md:mt-2 relative z-10">
         {/* Guest Banner (Desktop Box, Mobile Ticker) */}
         <div className="md:flex md:items-start md:gap-2.5 md:rounded-lg md:border md:border-amber-200 md:bg-amber-50 md:p-3 dark:md:border-amber-900/30 dark:md:bg-amber-950/20 overflow-hidden relative w-full h-8 md:h-auto border-y md:border-x border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 flex items-center">
           <AlertCircle className="hidden md:block h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />

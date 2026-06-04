@@ -219,7 +219,7 @@ export default function LecturerDashboard() {
   const totalSks = classes.reduce((sum, c) => sum + c.course_credits, 0)
 
   return (
-    <div className="space-y-4 select-none">
+    <div className="bg-white/90 dark:bg-[#121B2E]/90 backdrop-blur-md p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 select-none relative z-10">
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
