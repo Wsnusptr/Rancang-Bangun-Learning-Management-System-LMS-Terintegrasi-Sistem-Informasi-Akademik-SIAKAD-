@@ -4,16 +4,23 @@ import { useState, useEffect } from 'react'
 import { Calendar } from 'lucide-react'
 
 export default function TopbarGreeting({ name }: { name: string }) {
-  const [greeting, setGreeting] = useState('Selamat Datang')
+  const getGreeting = () => {
+    let hours = new Date().getHours()
+    if (typeof window === 'undefined') {
+      // Server-side (Vercel is UTC), fallback to WIB (UTC+7)
+      hours = (new Date().getUTCHours() + 7) % 24
+    }
+    if (hours < 11) return 'Selamat Pagi'
+    if (hours < 15) return 'Selamat Siang'
+    if (hours < 19) return 'Selamat Sore'
+    return 'Selamat Malam'
+  }
+
+  const [greeting, setGreeting] = useState(getGreeting)
   const [currentDate, setCurrentDate] = useState('')
 
   useEffect(() => {
-    const hours = new Date().getHours()
-    if (hours < 11) setGreeting('Selamat Pagi')
-    else if (hours < 15) setGreeting('Selamat Siang')
-    else if (hours < 19) setGreeting('Selamat Sore')
-    else setGreeting('Selamat Malam')
-
+    setGreeting(getGreeting())
     setCurrentDate(
       new Date().toLocaleDateString('id-ID', {
         weekday: 'long',
@@ -22,11 +29,18 @@ export default function TopbarGreeting({ name }: { name: string }) {
         year: 'numeric',
       })
     )
+    
+    // Update setiap menit agar waktu tetap akurat
+    const interval = setInterval(() => {
+      setGreeting(getGreeting())
+    }, 60000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xs font-bold text-slate-700 dark:text-white leading-none">
+      <h2 suppressHydrationWarning className="text-xs font-bold text-slate-700 dark:text-white leading-none">
         {greeting}, <span className="text-primary dark:text-blue-400">{name}</span>
       </h2>
       <span className="mt-1 flex items-center gap-1.5 text-[10px] font-medium text-slate-400 dark:text-gray-500 tracking-wide min-h-[14px]">
