@@ -90,7 +90,7 @@ export default function VantaBackground() {
               color1: 0xff0000,
               color2: 0xd1ff,
               colorMode: 'varianceGradient',
-              quantity: 2, // Hanya 2 burung yang terbang melewati atas teks
+              quantity: 1, // Hanya 1 burung yang terbang melewati atas teks
               birdSize: 1.5, // Sedikit lebih besar karena lebih dekat
               wingSpan: 35,
               speedLimit: 5,

@@ -2098,9 +2098,9 @@ export default function SiakadClientDashboard({
 
               {/* Sub-Tab Content 1: Setting Periode */}
               {subSettingTab === 'periode' && (
-                <div className="grid gap-5 lg:grid-cols-3 animate-fade-in">
+                <div className="animate-fade-in max-w-xl mx-auto relative z-10">
                   {/* Form Tambah Periode Manual */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#121B2E] h-fit">
+                  <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#121B2E]">
                     <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
                       <PlusCircle className="h-4 w-4 text-blue-500" />
                       Input Periode Manual
@@ -2218,84 +2218,6 @@ export default function SiakadClientDashboard({
                         )}
                       </button>
                     </form>
-                  </div>
-
-                  {/* Tabel Daftar Periode */}
-                  <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-[#121B2E] overflow-x-auto h-fit">
-                    <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-4">
-                      Daftar Periode Terdaftar
-                    </h3>
-
-                    <table className="w-full text-xs font-bold text-slate-650 dark:text-slate-350">
-                      <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 uppercase tracking-widest text-left">
-                          <th className="pb-3 pr-4">Kode</th>
-                          <th className="pb-3 pr-4">Nama Semester</th>
-                          <th className="pb-3 pr-4">Tahun Akademik</th>
-                          <th className="pb-3 pr-4">Tipe</th>
-                          <th className="pb-3 pr-4 text-center">Status</th>
-                          <th className="pb-3 text-right">Tindakan</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {semestersCatalog.map((sem: any) => (
-                          <tr key={sem.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
-                            <td className="py-4 pr-4 font-mono font-bold text-slate-500 dark:text-slate-400">
-                              {sem.code}
-                            </td>
-                            <td className="py-4 pr-4">
-                              <p className="font-extrabold text-slate-850 dark:text-white">{sem.name}</p>
-                            </td>
-                            <td className="py-4 pr-4 text-slate-500 dark:text-slate-400">
-                              {sem.academic_year}
-                            </td>
-                            <td className="py-4 pr-4">
-                              {sem.semester_type || (sem.code ? (sem.code.endsWith('1') ? 'Ganjil' : 'Genap') : '-')}
-                            </td>
-                            <td className="py-4 pr-4 text-center">
-                              {sem.is_active ? (
-                                <span className="inline-flex rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-450 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
-                                  Aktif
-                                </span>
-                              ) : (
-                                <span className="inline-flex rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider">
-                                  Tidak Aktif
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-4 text-right">
-                              {!sem.is_active && (
-                                <button
-                                  onClick={async () => {
-                                    if (confirm(`Apakah Anda yakin ingin mengaktifkan periode '${sem.name}'?`)) {
-                                      try {
-                                        const res = await fetch('/api/v1/semesters', {
-                                          method: 'POST',
-                                          headers: authHeaders,
-                                          body: JSON.stringify({ semesterId: sem.id })
-                                        })
-                                        const json = await res.json()
-                                        if (json.success) {
-                                          alert(json.message)
-                                          router.refresh()
-                                        } else {
-                                          alert(json.error || '-')
-                                        }
-                                      } catch (err: any) {
-                                        alert(err.message || '-')
-                                      }
-                                    }
-                                  }}
-                                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold shadow-sm transition-colors cursor-pointer"
-                                >
-                                  Aktifkan
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               )}
