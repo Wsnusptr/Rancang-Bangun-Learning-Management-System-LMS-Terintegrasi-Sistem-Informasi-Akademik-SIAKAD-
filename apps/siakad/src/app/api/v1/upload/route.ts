@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (uploadError) throw uploadError
 
     const { data: publicUrlData } = supabase.storage
-      .from('announcements')
+      .from('pmb_resources')
       .getPublicUrl(filePath)
 
     return NextResponse.json({ success: true, url: publicUrlData.publicUrl })
