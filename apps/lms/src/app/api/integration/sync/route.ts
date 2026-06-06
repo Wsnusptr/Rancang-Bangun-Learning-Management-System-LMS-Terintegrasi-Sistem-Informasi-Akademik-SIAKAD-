@@ -99,13 +99,19 @@ export async function POST(request: NextRequest) {
     const course = cls.courses as any
     const semester = cls.academic_semesters as any
 
-    // Fetch Master Weights from SIAKAD
-    const fs = await import('fs/promises')
-    const path = await import('path')
+    // Fetch Master Weights from Supabase system_settings
     let masterWeights = { absen: 10, tugas: 20, kuis: 10, uts: 30, uas: 30 }
     try {
-      const wContent = await fs.readFile(path.join(process.cwd(), '..', '..', 'master_weights.json'), 'utf-8')
-      masterWeights = JSON.parse(wContent)
+      const { data: weightSetting } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'master_weights')
+        .single()
+      if (weightSetting) {
+        masterWeights = typeof weightSetting.value === 'string'
+          ? JSON.parse(weightSetting.value)
+          : weightSetting.value
+      }
     } catch(e) {}
 
     // Build records array using absolute Master Weights Calculation

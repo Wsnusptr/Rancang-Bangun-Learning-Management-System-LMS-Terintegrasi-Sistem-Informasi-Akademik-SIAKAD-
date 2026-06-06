@@ -141,14 +141,127 @@ export default function PmbInteractivePortal() {
 
 
 
-                {/* PLACEHOLDER UNTUK MENU LAINNYA */}
-                {['scholarships', 'requirements', 'testimonials', 'facilities', 'contacts', 'resources'].includes(activeMenu) && (
-                    <div className="animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center justify-center h-full text-center p-12 opacity-70">
-                        <Building className="h-10 w-10 text-slate-400 dark:text-slate-600 mb-4" />
-                        <h3 className="text-[10px] md:text-xs font-black text-slate-800 dark:text-white mb-2 uppercase tracking-widest">
-                            Segera Hadir: {MENU_ITEMS.find(m => m.id === activeMenu)?.label}
-                        </h3>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm">Data sedang dipersiapkan oleh pihak akademik. Anda akan dapat melihat informasi ini dalam waktu dekat.</p>
+                {/* 3. BIAYA & BEASISWA */}
+                {activeMenu === 'scholarships' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Informasi Biaya & Beasiswa</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Berbagai jalur beasiswa dan bantuan biaya pendidikan.</p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            {data?.scholarships?.length > 0 ? data.scholarships.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 hover:border-blue-500 transition-colors">
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-1.5">{item.scholarship_name}</h4>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30 px-2 py-0.5 rounded">{item.amount}</span>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400 col-span-full">Data beasiswa belum tersedia.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. SYARAT DAFTAR */}
+                {activeMenu === 'requirements' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Syarat & Ketentuan Pendaftaran</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Dokumen dan persyaratan yang harus Anda penuhi.</p>
+                        <div className="space-y-3">
+                            {data?.requirements?.length > 0 ? data.requirements.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 flex gap-3 items-start">
+                                    <FileCheck className="h-5 w-5 text-blue-600 dark:text-blue-500 shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="text-[11px] font-bold text-slate-800 dark:text-white mb-1">{item.title}</h4>
+                                        <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{item.description}</p>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400">Data syarat pendaftaran belum tersedia.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 5. KISAH ALUMNI */}
+                {activeMenu === 'testimonials' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Kisah Sukses Alumni</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Apa kata mereka yang telah lulus dari kampus ini.</p>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {data?.testimonials?.length > 0 ? data.testimonials.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 flex flex-col justify-between">
+                                    <p className="text-[11px] text-slate-600 dark:text-slate-400 italic mb-4">"{item.testimonial_text}"</p>
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-800 dark:text-white">{item.alumni_name}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{item.alumni_position}</p>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400 col-span-full">Belum ada testimoni.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 6. FASILITAS */}
+                {activeMenu === 'facilities' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Fasilitas Kampus</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Sarana dan prasarana penunjang perkuliahan Anda.</p>
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {data?.facilities?.length > 0 ? data.facilities.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60">
+                                    <h4 className="text-[11px] font-bold text-slate-800 dark:text-white mb-1">{item.facility_name}</h4>
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400">{item.facility_description}</p>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400 col-span-full">Data fasilitas belum tersedia.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 7. KONTAK */}
+                {activeMenu === 'contacts' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Pusat Layanan PMB</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Hubungi kami melalui saluran berikut untuk informasi lebih lanjut.</p>
+                        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                            {data?.contacts?.length > 0 ? data.contacts.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-blue-50 dark:bg-[#0D1424] border border-blue-100 dark:border-blue-900/50 flex flex-col items-center justify-center text-center">
+                                    <Phone className="h-6 w-6 text-blue-600 mb-2" />
+                                    <h4 className="text-[11px] font-bold text-slate-800 dark:text-white">{item.platform}</h4>
+                                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{item.contact_detail}</p>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400 col-span-full">Data kontak belum tersedia.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 8. BROSUR & MEDIA */}
+                {activeMenu === 'resources' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Unduhan Media & Brosur</h3>
+                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Unduh brosur resmi dan panduan PMB.</p>
+                        <div className="space-y-3">
+                            {data?.resources?.length > 0 ? data.resources.map((item: any) => (
+                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-rose-100 text-rose-600 dark:bg-rose-900/30 p-2 rounded-lg">
+                                            <Download className="h-4 w-4" />
+                                        </div>
+                                        <h4 className="text-[11px] font-bold text-slate-800 dark:text-white">{item.title}</h4>
+                                    </div>
+                                    <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors">
+                                        Unduh
+                                    </a>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-slate-400">Media unduhan belum tersedia.</p>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

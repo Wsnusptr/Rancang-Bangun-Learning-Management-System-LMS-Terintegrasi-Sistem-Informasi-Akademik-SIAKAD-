@@ -6,12 +6,8 @@ import { successResponse, serverErrorResponse } from '@/lib/utils'
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: classId } = await params
-    const { user, response } = await requireClassLecturer(classId)
+    const { response } = await requireClassLecturer(classId)
     if (response) return response
-
-    if (user?.role === 'backup_lecturer') {
-      return serverErrorResponse(new Error('Akses Ditolak: Dosen Pengganti (Backup) tidak diizinkan mengubah nilai ujian mahasiswa.'))
-    }
 
     const supabase = await createClient()
     const { updates } = await request.json()

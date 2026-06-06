@@ -1,28 +1,44 @@
 import { NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { requireRole } from '@/lib/auth'
+import { createClient } from '@supabase/supabase-js'
 
-const DB_FILE = path.join(process.cwd(), '..', '..', 'backup_sessions.json')
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET() {
   try {
     const authCheck = await requireRole('lecturer', 'admin')
     if (authCheck.response) return authCheck.response
 
-    let content = '[]'
-    try {
-      content = await fs.readFile(DB_FILE, 'utf-8')
-    } catch (e) {
-      // ignore
-    }
-    const db = JSON.parse(content)
-    
-    // Sort newest first
-    const sorted = db.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    
-    return NextResponse.json({ success: true, data: sorted })
+    const user = authCheck.user!
+
+    // Get all classes where this user is the main lecturer AND has a backup assigned
+    const { data, error } = await supabaseAdmin
+      .from('classes')
+      .select(`
+        id,
+        backup_lecturer_id,
+        backup_lecturer:profiles!classes_backup_lecturer_id_fkey(id, full_name, email),
+        class_details:id (class_name, course_name, class_code)
+      `)
+      .eq('lecturer_id', user.id)
+      .not('backup_lecturer_id', 'is', null)
+
+    if (error) throw error
+
+    const mapped = (data || []).map((cls: any) => ({
+      classId: cls.id,
+      className: cls.class_details ? `${cls.class_details.course_name} - ${cls.class_details.class_name}` : cls.id,
+      backupLecturerId: cls.backup_lecturer_id,
+      backupName: cls.backup_lecturer?.full_name || 'Unknown',
+      backupEmail: cls.backup_lecturer?.email || ''
+    }))
+
+    return NextResponse.json({ success: true, data: mapped })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+

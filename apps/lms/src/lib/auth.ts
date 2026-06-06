@@ -5,7 +5,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { unauthorizedResponse, forbiddenResponse } from '@/lib/utils'
 
-export type UserRole = 'student' | 'lecturer' | 'admin' | 'staff' | 'backup_lecturer'
+// backup_lecturer is now a real lecturer with access via backup_lecturer_id column in classes table
+export type UserRole = 'student' | 'lecturer' | 'admin' | 'staff'
 
 export interface AuthUser {
   id: string
@@ -21,31 +22,6 @@ export interface AuthUser {
  * Returns null if not authenticated.
  */
 export async function getAuthUser(): Promise<AuthUser | null> {
-  // Check for Backup Lecturer token first
-  try {
-    const { cookies } = await import('next/headers')
-    const cookieStore = await cookies()
-    const backupToken = cookieStore.get('backup_session_token')?.value
-    if (backupToken) {
-      const fs = await import('fs/promises')
-      const path = await import('path')
-      const content = await fs.readFile(path.join(process.cwd(), '..', '..', 'backup_sessions.json'), 'utf-8')
-      const sessions = JSON.parse(content)
-      const session = sessions.find((s: any) => s.id === backupToken)
-      if (session && new Date(session.expiredAt) > new Date()) {
-        return {
-          id: 'backup-' + session.id, // Prefix to indicate mock
-          email: session.email,
-          role: 'backup_lecturer',
-          name: session.backupName,
-          nim: null,
-          avatarUrl: null
-        }
-      }
-    }
-  } catch (e) {
-    // ignore
-  }
 
   const supabase = await createClient()
 
@@ -121,7 +97,7 @@ export async function requireRole(
 }
 
 /**
- * Check if user is lecturer of a specific class
+ * Check if user is lecturer of a specific class (including backup_lecturer_id)
  */
 export async function requireClassLecturer(classId: string): Promise<
   | { user: AuthUser; response: null }
@@ -136,36 +112,16 @@ export async function requireClassLecturer(classId: string): Promise<
   // Admin can access all classes
   if (user.role === 'admin') return { user, response: null }
 
-  // Backup Lecturer can only access their specific class
-  if (user.role === 'backup_lecturer') {
-    try {
-      const { cookies } = await import('next/headers')
-      const cookieStore = await cookies()
-      const backupToken = cookieStore.get('backup_session_token')?.value
-      if (backupToken) {
-        const fs = await import('fs/promises')
-        const path = await import('path')
-        const content = await fs.readFile(path.join(process.cwd(), '..', '..', 'backup_sessions.json'), 'utf-8')
-        const sessions = JSON.parse(content)
-        const session = sessions.find((s: any) => s.id === backupToken)
-        if (session && session.classId === classId) {
-          return { user, response: null }
-        }
-      }
-    } catch (e) {}
-    return { user: null, response: forbiddenResponse('Akses ditolak: Akun Backup Anda tidak diotorisasi untuk kelas ini.') }
-  }
-
-  // Skip class check if no classId (used in integration/sync route)
+  // Skip class check if no classId
   if (!classId) return { user, response: null }
 
-  // Check if lecturer owns this class
+  // Check if lecturer is main lecturer OR backup_lecturer_id for this class
   if (user.role === 'lecturer') {
     const { data: cls } = await supabase
       .from('classes')
       .select('id')
       .eq('id', classId)
-      .eq('lecturer_id', user.id)
+      .or(`lecturer_id.eq.${user.id},backup_lecturer_id.eq.${user.id}`)
       .single()
 
     if (!cls) {

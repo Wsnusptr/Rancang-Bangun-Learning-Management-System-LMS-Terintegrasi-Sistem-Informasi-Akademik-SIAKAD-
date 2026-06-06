@@ -14,9 +14,14 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
-    
+
     if (!file) {
       return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 })
+    }
+
+    const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ success: false, error: 'File size exceeds 50 MB limit' }, { status: 400 })
     }
 
     const bytes = await file.arrayBuffer()
@@ -27,10 +32,10 @@ export async function POST(request: NextRequest) {
     const filePath = `announcements/${fileName}`
 
     const { error: uploadError } = await supabase.storage
-      .from('announcements') // Use the announcements bucket
-      .upload(filePath, buffer, { 
+      .from('pmb_resources')
+      .upload(filePath, buffer, {
         contentType: file.type,
-        upsert: true 
+        upsert: true
       })
 
     if (uploadError) throw uploadError

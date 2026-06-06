@@ -187,10 +187,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     const { user, response } = await requireClassLecturer(id)
     if (response) return response
 
-    if (user?.role === 'backup_lecturer') {
-      return serverErrorResponse(new Error('Akses Ditolak: Dosen Pengganti (Backup) tidak memiliki wewenang untuk membuat tugas.'))
-    }
-
     const body = await request.json()
     const parsed = createAssignmentSchema.safeParse(body)
 

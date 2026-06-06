@@ -817,8 +817,8 @@ export default function AcademicInfoPanel() {
                     <h3 className="text-[11.5px] font-extrabold text-slate-800 dark:text-white leading-tight">{ann.title}</h3>
                     <p className="mt-1.5 text-[10px] text-slate-550 dark:text-slate-400 leading-relaxed line-clamp-4">{ann.description}</p>
                     {ann.media_url && (
-                      <div className="mt-3 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
-                        <img src={ann.media_url} alt={ann.title} className="w-full max-h-36 object-cover" />
+                      <div className="mt-3 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                        <img src={ann.media_url} alt={ann.title} className="w-full max-h-60 object-contain" />
                       </div>
                     )}
                   </div>

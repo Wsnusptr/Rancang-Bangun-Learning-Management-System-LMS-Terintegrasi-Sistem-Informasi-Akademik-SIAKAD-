@@ -153,23 +153,6 @@ export default function LoginClient() {
         const supabase = createClient()
 
         try {
-            // Intercept for Backup Dosen
-            if (email.startsWith('backup.')) {
-                const backupRes = await fetch('/api/v1/dosen/backup/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                })
-                const backupJson = await backupRes.json()
-                if (backupJson.success) {
-                    router.push('/lecturer/dashboard')
-                    router.refresh()
-                    return
-                } else {
-                    throw new Error(backupJson.error || 'Akun backup tidak valid atau expired')
-                }
-            }
-
             const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -243,11 +226,23 @@ export default function LoginClient() {
         setSuccessMsg(null)
 
         try {
-            // Dummy check for presentation (you'd integrate with SIAKAD API here)
-            // fetch('/api/v1/mahasiswa-baru', { method: 'POST', body: JSON.stringify({ ... }) })
-            await new Promise(resolve => setTimeout(resolve, 1500))
+            const supabase = createClient()
+            const { error: insertError } = await supabase.from('mahasiswa_baru').insert({
+                email: regEmail,
+                full_name: regName,
+                phone: regPhone,
+                date_of_birth: regDob,
+                address: regAddress
+            })
 
-            setSuccessMsg('Pendaftaran awal berhasil. Silakan cek email atau login dengan Google untuk melengkapi profil.')
+            if (insertError) {
+                if (insertError.code === '23505') {
+                    throw new Error('Email ini sudah pernah terdaftar.')
+                }
+                throw insertError
+            }
+
+            setSuccessMsg('Pendaftaran berhasil! Tim PMB akan meninjau data Anda. Silakan pantau email Anda secara berkala.')
             setRegName('')
             setRegEmail('')
             setRegPhone('')

@@ -460,11 +460,25 @@ export default function SiakadClientDashboard({
   // --- PMB NIM Generation helper ---
   const handleOpenPmbModal = (pmb: any) => {
     setSelectedPmb(pmb)
-    // Auto-generate NIM format: [Year] [ProgramCode 11/12] [RunningNumber 3 digits]
-    const year = new Date().getFullYear().toString().substring(2)
+    // Format: [Year:2] [ProgramCode:2] [RunningNumber:3]
+    const yearStr = new Date().getFullYear().toString().substring(2)
     const progCode = pmb.intended_program === 'S1-SI' || pmb.intended_program?.toLowerCase().includes('sistem') ? '12' : '11'
-    const rand = Math.floor(100 + Math.random() * 900).toString() // Generate 3 digit random code for dummy
-    setGeneratedNim(`20${year}${progCode}${rand}`)
+    const prefix = `20${yearStr}${progCode}`
+    
+    // Find highest existing NIM with this prefix
+    let maxRunning = 0
+    initialStudents.forEach((s: any) => {
+      if (s.nim && s.nim.startsWith(prefix)) {
+        const runningStr = s.nim.substring(prefix.length)
+        const running = parseInt(runningStr, 10)
+        if (!isNaN(running) && running > maxRunning) {
+          maxRunning = running
+        }
+      }
+    })
+    
+    const nextRunning = (maxRunning + 1).toString().padStart(3, '0')
+    setGeneratedNim(`${prefix}${nextRunning}`)
     setModalError(null)
     setModalSuccess(null)
     setShowPmbModal(true)

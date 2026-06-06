@@ -127,12 +127,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
 export async function POST(_request: NextRequest, { params }: Params) {
   try {
     const { id } = await params
-    const { user, response } = await requireClassLecturer(id)
+    const { response } = await requireClassLecturer(id)
     if (response) return response
-
-    if (user?.role === 'backup_lecturer') {
-      return serverErrorResponse(new Error('Akses Ditolak: Dosen Pengganti (Backup) tidak memiliki wewenang untuk menghitung ulang nilai seluruh kelas.'))
-    }
 
     const supabase = await createClient()
 
@@ -155,12 +151,8 @@ export async function POST(_request: NextRequest, { params }: Params) {
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params
-    const { user, response } = await requireClassLecturer(id)
+    const { response } = await requireClassLecturer(id)
     if (response) return response
-
-    if (user?.role === 'backup_lecturer') {
-      return serverErrorResponse(new Error('Akses Ditolak: Dosen Pengganti (Backup) tidak memiliki wewenang untuk mengubah bobot penilaian kelas.'))
-    }
 
     const supabase = await createClient()
     const body = await request.json()

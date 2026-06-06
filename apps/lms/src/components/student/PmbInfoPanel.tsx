@@ -90,9 +90,9 @@ export default function PmbInfoPanel({ className = '' }: PmbInfoPanelProps) {
             {item.media_url && (
               <div className="mt-2 overflow-hidden rounded-md border border-slate-100 dark:border-slate-800">
                 {item.media_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                  <video src={item.media_url} controls className="w-full max-h-36" />
+                  <video src={item.media_url} controls className="w-full h-auto bg-slate-100 dark:bg-slate-800" />
                 ) : (
-                  <img src={item.media_url} alt={item.title} className="w-full max-h-36 object-cover" />
+                  <img src={item.media_url} alt={item.title} className="w-full h-auto bg-slate-100 dark:bg-slate-800" />
                 )}
               </div>
             )}
