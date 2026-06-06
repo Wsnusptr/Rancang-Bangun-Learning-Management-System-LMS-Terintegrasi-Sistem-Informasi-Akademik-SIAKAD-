@@ -87,7 +87,7 @@ ATURAN FORMATTING JAWABAN (SANGAT PENTING UNTUK TAMPILAN MOBILE):
       ]
 
       const payload = {
-        model: isGroq ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+        model: isGroq ? 'llama-3.3-70b-versatile' : 'gpt-3.5-turbo',
         messages: openAIMessages,
         temperature: 0.7,
         max_tokens: 1024

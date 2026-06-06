@@ -155,6 +155,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'ID kelas wajib diisi.' }, { status: 400 })
     }
 
+    // Manually delete related notifications that reference this class to bypass missing ON DELETE CASCADE
+    await supabase.from('notifications').delete().eq('related_class_id', id)
+
+    // Delete enrollments and assignments to be safe (if they don't have CASCADE)
+    await supabase.from('enrollments').delete().eq('class_id', id)
+    await supabase.from('assignments').delete().eq('class_id', id)
+    await supabase.from('class_materials').delete().eq('class_id', id)
+    await supabase.from('attendance_sessions').delete().eq('class_id', id)
+
     const { error } = await supabase.from('classes').delete().eq('id', id)
     if (error) throw error
 

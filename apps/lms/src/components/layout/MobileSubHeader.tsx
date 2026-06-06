@@ -73,14 +73,15 @@ export default function MobileSubHeader() {
       // 3. Check scroll delta
       const delta = currentScrollY - lastScrollY
       
-      if (delta > 5) {
-        // Scrolling down -> hide
-        if (isVisibleRef.current) setIsVisible(false)
-        lastScrollY = currentScrollY
-      } else if (delta < -5) {
-        // Scrolling up -> show
-        if (!isVisibleRef.current) setIsVisible(true)
-        startIdleTimer()
+      if (Math.abs(delta) > 15) {
+        if (delta > 0) {
+          // Scrolling down -> hide
+          if (isVisibleRef.current) setIsVisible(false)
+        } else {
+          // Scrolling up -> show
+          if (!isVisibleRef.current) setIsVisible(true)
+          startIdleTimer()
+        }
         lastScrollY = currentScrollY
       }
     }

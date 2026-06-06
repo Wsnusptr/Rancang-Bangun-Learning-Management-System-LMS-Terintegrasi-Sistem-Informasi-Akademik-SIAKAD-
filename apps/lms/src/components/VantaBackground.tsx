@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 
 declare global {
   interface Window {
@@ -10,8 +11,13 @@ declare global {
 }
 
 export default function VantaBackground() {
+  const pathname = usePathname()
   const vantaRefBack = useRef<HTMLDivElement>(null)
   const vantaRefFront = useRef<HTMLDivElement>(null)
+
+  if (pathname === '/login') {
+    return null;
+  }
 
   useEffect(() => {
     const loadScript = (src: string) => {

@@ -156,6 +156,22 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'ID wajib diisi.' }, { status: 400 })
     }
 
+    // Clean up related records manually to bypass foreign key constraints
+    await supabase.from('notifications').delete().eq('recipient_id', id)
+    await supabase.from('class_posts').delete().eq('author_id', id)
+    
+    // Find classes owned by lecturer
+    const { data: classes } = await supabase.from('classes').select('id').eq('lecturer_id', id)
+    if (classes && classes.length > 0) {
+      const classIds = classes.map(c => c.id)
+      await supabase.from('notifications').delete().in('related_class_id', classIds)
+      await supabase.from('enrollments').delete().in('class_id', classIds)
+      await supabase.from('assignments').delete().in('class_id', classIds)
+      await supabase.from('class_materials').delete().in('class_id', classIds)
+      await supabase.from('attendance_sessions').delete().in('class_id', classIds)
+      await supabase.from('classes').delete().in('id', classIds)
+    }
+
     // Delete from profiles
     const { error: profileError } = await supabase.from('profiles').delete().eq('id', id)
     if (profileError) throw profileError
