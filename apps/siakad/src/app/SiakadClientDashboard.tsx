@@ -1949,7 +1949,7 @@ export default function SiakadClientDashboard({
           {/* TAB: PORTAL PMB */}
           {activeTab === 'portal_pmb' && (
             <div className="p-4 md:p-6 lg:p-8">
-              <PmbManagerClient />
+              <PmbManagerClient apiKey={apiKey} />
             </div>
           )}
 

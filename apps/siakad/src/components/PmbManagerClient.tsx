@@ -18,7 +18,7 @@ const TABS = [
     { id: 'resources', label: 'Media Unduhan', icon: Download },
 ]
 
-export default function PmbManagerClient() {
+export default function PmbManagerClient({ apiKey }: { apiKey?: string }) {
     const [activeTab, setActiveTab] = useState(TABS[0].id)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -28,6 +28,7 @@ export default function PmbManagerClient() {
     const [message, setMessage] = useState<{type: 'success'|'error', text: string} | null>(null)
 
     const tableName = `pmb_${activeTab}`
+    const authHeaders = { 'Content-Type': 'application/json', ...(apiKey ? { 'x-api-key': apiKey } : {}) }
 
     useEffect(() => {
         fetchData()
@@ -39,7 +40,9 @@ export default function PmbManagerClient() {
     const fetchData = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/v1/pmb/manage?table=${tableName}`)
+            const res = await fetch(`/api/v1/pmb/manage?table=${tableName}`, {
+                headers: { ...(apiKey ? { 'x-api-key': apiKey } : {}) }
+            })
             const result = await res.json()
             if (result.success) {
                 setDataList(result.data || [])
@@ -72,7 +75,7 @@ export default function PmbManagerClient() {
 
             const res = await fetch('/api/v1/pmb/manage', {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders,
                 body: JSON.stringify(payload)
             })
 
@@ -106,7 +109,7 @@ export default function PmbManagerClient() {
         try {
             const res = await fetch('/api/v1/pmb/manage', {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders,
                 body: JSON.stringify({ table: tableName, id })
             })
             const result = await res.json()
