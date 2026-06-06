@@ -25,7 +25,7 @@ export default function PmbInteractivePortal() {
     useEffect(() => {
         const fetchPortalData = async () => {
             try {
-                const res = await fetch('/api/v1/pmb/portal')
+                const res = await fetch(`/api/v1/pmb/portal?t=${Date.now()}`)
                 if (!res.ok) throw new Error('Failed to fetch data')
                 const json = await res.json()
                 setData(json.data)
