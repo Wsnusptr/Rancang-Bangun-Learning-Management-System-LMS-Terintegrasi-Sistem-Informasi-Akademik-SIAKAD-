@@ -300,14 +300,14 @@ export default function PmbInteractivePortal() {
                                         className="group block rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-[#121B2E] overflow-hidden hover:border-blue-400 dark:hover:border-blue-600 transition-all shadow-sm hover:shadow-md">
                                         {/* Preview area */}
                                         {fileType === 'image' ? (
-                                            <div className="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                <img src={item.file_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800 flex justify-center items-center overflow-hidden">
+                                                <img src={item.file_url} alt={item.title} className="w-full h-auto max-h-[500px] object-contain group-hover:scale-[1.02] transition-transform duration-300" />
                                             </div>
                                         ) : fileType === 'video' ? (
-                                            <div className="w-full aspect-video overflow-hidden bg-black relative">
+                                            <div className="w-full bg-black relative flex justify-center items-center overflow-hidden">
                                                 <video 
                                                     src={item.file_url} 
-                                                    className="w-full h-full object-cover pointer-events-none" 
+                                                    className="w-full h-auto max-h-[500px] object-contain pointer-events-none" 
                                                     autoPlay 
                                                     muted 
                                                     loop 
@@ -316,10 +316,10 @@ export default function PmbInteractivePortal() {
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
                                                     <PlayCircle className="h-10 w-10 text-white/80 group-hover:text-white transition-colors group-hover:scale-110 duration-300" />
                                                 </div>
-                                                <span className="absolute top-2 right-2 bg-purple-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase">VIDEO</span>
+                                                <span className="absolute top-2 right-2 bg-purple-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">VIDEO</span>
                                             </div>
                                         ) : fileType === 'pdf' ? (
-                                            <div className="w-full aspect-video overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
+                                            <div className="w-full h-[400px] overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
                                                 <iframe src={`${item.file_url}#page=1&view=FitH&toolbar=0&navpanes=0`}
                                                     className="w-full h-full pointer-events-none" title={item.title} />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
