@@ -279,7 +279,11 @@ export default function PmbManagerClient({ apiKey }: { apiKey?: string }) {
                                             const fd = new FormData()
                                             fd.append('file', file)
                                             try {
-                                                const res = await fetch('/api/v1/upload', { method: 'POST', body: fd })
+                                                const res = await fetch('/api/v1/upload', {
+                                                    method: 'POST',
+                                                    headers: { ...(apiKey ? { 'x-api-key': apiKey } : {}) },
+                                                    body: fd
+                                                })
                                                 const result = await res.json()
                                                 if (result.success) {
                                                     handleInputChange('file_url', result.url)
