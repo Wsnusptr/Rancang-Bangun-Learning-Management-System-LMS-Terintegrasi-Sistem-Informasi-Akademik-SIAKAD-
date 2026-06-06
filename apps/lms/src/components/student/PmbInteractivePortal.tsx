@@ -179,13 +179,15 @@ export default function PmbInteractivePortal() {
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Jalur beasiswa dan bantuan biaya pendidikan yang tersedia.</p>
                         <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                             {data?.scholarships?.length > 0 ? data.scholarships.map((item: any, i: number) => (
-                                <div key={item.id} className="flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121B2E] hover:bg-slate-50 dark:hover:bg-[#0D1424] transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-500 shrink-0">{i + 1}</span>
-                                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{item.scholarship_name}</span>
+                                <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between px-3 md:px-4 py-3 bg-white dark:bg-[#121B2E] hover:bg-slate-50 dark:hover:bg-[#0D1424] transition-colors gap-2 sm:gap-4">
+                                    <div className="flex items-start sm:items-center gap-2.5 md:gap-3">
+                                        <span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] md:text-[10px] font-black text-slate-500 shrink-0 mt-0.5 sm:mt-0">{i + 1}</span>
+                                        <span className="text-[11px] md:text-xs font-semibold text-slate-800 dark:text-slate-200 leading-snug break-words">{item.scholarship_name}</span>
                                     </div>
                                     {item.amount && (
-                                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 px-2 py-0.5 rounded-full shrink-0 ml-3">{item.amount}</span>
+                                        <div className="pl-7 sm:pl-0 shrink-0">
+                                            <span className="inline-block text-[9px] md:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 px-2 py-0.5 rounded-md md:rounded-full break-words max-w-full">{item.amount}</span>
+                                        </div>
                                     )}
                                 </div>
                             )) : (
