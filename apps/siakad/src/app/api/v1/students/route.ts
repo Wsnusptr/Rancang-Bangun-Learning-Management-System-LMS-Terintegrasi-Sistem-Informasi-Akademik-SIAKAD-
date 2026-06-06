@@ -64,6 +64,15 @@ export async function DELETE(request: NextRequest) {
     await supabase.from('student_grades').delete().eq('student_id', id)
     await supabase.from('academic_records').delete().eq('student_id', id)
 
+    // Delete from mahasiswa_baru if the ID belongs to a PMB applicant (hasn't synced yet)
+    await supabase.from('mahasiswa_baru').delete().eq('id', id)
+    
+    // Also try to find if this profile is linked to a mahasiswa_baru via assigned_nim
+    const { data: profileData } = await supabase.from('profiles').select('nim').eq('id', id).single()
+    if (profileData?.nim) {
+      await supabase.from('mahasiswa_baru').delete().eq('assigned_nim', profileData.nim)
+    }
+
     // Delete from profiles
     const { error: profileError } = await supabase.from('profiles').delete().eq('id', id)
     if (profileError) throw profileError
