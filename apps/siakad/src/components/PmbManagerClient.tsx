@@ -275,21 +275,32 @@ export default function PmbManagerClient({ apiKey }: { apiKey?: string }) {
                                             const file = e.target.files?.[0]
                                             if (!file) return
                                             
-                                            // Handle upload
-                                            const fd = new FormData()
-                                            fd.append('file', file)
+                                            // 1. Get signed URL from our API
                                             try {
                                                 const res = await fetch('/api/v1/upload', {
                                                     method: 'POST',
-                                                    headers: { ...(apiKey ? { 'x-api-key': apiKey } : {}) },
-                                                    body: fd
+                                                    headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-api-key': apiKey } : {}) },
+                                                    body: JSON.stringify({ filename: file.name })
                                                 })
                                                 const result = await res.json()
-                                                if (result.success) {
-                                                    handleInputChange('file_url', result.url)
-                                                } else {
-                                                    alert('Gagal upload: ' + result.error)
+                                                if (!result.success) {
+                                                    throw new Error(result.error)
                                                 }
+
+                                                // 2. Upload directly to Supabase Storage
+                                                const { createClient } = await import('@supabase/supabase-js')
+                                                const supabase = createClient(
+                                                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                                                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                                                )
+
+                                                const { error: uploadError } = await supabase.storage
+                                                    .from('pmb_resources')
+                                                    .uploadToSignedUrl(result.path, result.token, file)
+
+                                                if (uploadError) throw uploadError
+
+                                                handleInputChange('file_url', result.url)
                                             } catch (err: any) {
                                                 alert('Gagal upload: ' + err.message)
                                             }

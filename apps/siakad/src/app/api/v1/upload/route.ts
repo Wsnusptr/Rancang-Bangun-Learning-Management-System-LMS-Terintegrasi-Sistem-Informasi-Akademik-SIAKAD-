@@ -12,39 +12,35 @@ export async function POST(request: NextRequest) {
   if (authError) return authError
 
   try {
-    const formData = await request.formData()
-    const file = formData.get('file') as File
+    const { filename } = await request.json()
 
-    if (!file) {
-      return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 })
+    if (!filename) {
+      return NextResponse.json({ success: false, error: 'No filename provided' }, { status: 400 })
     }
 
-    const MAX_SIZE = 50 * 1024 * 1024 // 50 MB
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json({ success: false, error: 'File size exceeds 50 MB limit' }, { status: 400 })
-    }
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    const fileExt = file.name.split('.').pop()
+    const fileExt = filename.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
     const filePath = `announcements/${fileName}`
 
-    const { error: uploadError } = await supabase.storage
+    // Create a signed upload URL valid for 10 minutes
+    const { data: signedData, error: signedError } = await supabase.storage
       .from('pmb_resources')
-      .upload(filePath, buffer, {
-        contentType: file.type,
-        upsert: true
-      })
+      .createSignedUploadUrl(filePath)
 
-    if (uploadError) throw uploadError
+    if (signedError) throw signedError
 
+    // Pre-calculate public URL for the client to save
     const { data: publicUrlData } = supabase.storage
       .from('pmb_resources')
       .getPublicUrl(filePath)
 
-    return NextResponse.json({ success: true, url: publicUrlData.publicUrl })
+    return NextResponse.json({ 
+      success: true, 
+      signedUrl: signedData.signedUrl,
+      token: signedData.token,
+      path: signedData.path,
+      url: publicUrlData.publicUrl 
+    })
   } catch (error: any) {
     console.error('[SIAKAD File Upload Error]', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
