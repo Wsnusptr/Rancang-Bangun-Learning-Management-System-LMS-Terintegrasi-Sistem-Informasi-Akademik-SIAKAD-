@@ -1893,9 +1893,9 @@ export default function SiakadClientDashboard({
                       {ann.media_url && (
                         <div className="mt-3 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
                           {ann.media_url.match(/\.(mp4|webm)$/i) ? (
-                            <video src={ann.media_url} controls className="w-full h-32 object-cover" />
+                            <video src={ann.media_url} controls className="w-full max-h-80 object-contain" />
                           ) : (
-                            <img src={ann.media_url} alt={ann.title} className="w-full h-32 object-cover" />
+                            <img src={ann.media_url} alt={ann.title} className="w-full max-h-80 object-contain" />
                           )}
                         </div>
                       )}
@@ -2835,6 +2835,23 @@ export default function SiakadClientDashboard({
                     </div>
                   </div>
                 </div>
+                {annForm.media_url && (
+                  <div className="mt-2 relative inline-block group">
+                    {annForm.media_url.match(/\.(mp4|webm)$/i) ? (
+                      <video src={annForm.media_url} className="h-20 w-auto rounded-md object-contain bg-slate-100 dark:bg-[#18233C]" />
+                    ) : (
+                      <img src={annForm.media_url} alt="Preview" className="h-20 w-auto rounded-md object-contain bg-slate-100 dark:bg-[#18233C]" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setAnnForm({ ...annForm, media_url: '' })}
+                      className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      title="Hapus Media"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
