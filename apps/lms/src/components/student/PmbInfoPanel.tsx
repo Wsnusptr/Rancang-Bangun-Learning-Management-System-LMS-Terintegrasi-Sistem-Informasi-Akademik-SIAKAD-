@@ -74,11 +74,11 @@ export default function PmbInfoPanel({ className = '' }: PmbInfoPanelProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 items-start">
+      <div className="columns-1 sm:columns-2 gap-3 space-y-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className={`rounded-lg border bg-white p-4 shadow-sm dark:bg-[#121B2E] ${
+            className={`break-inside-avoid rounded-lg border bg-white p-4 shadow-sm dark:bg-[#121B2E] ${
               item.highlight ? 'border-blue-200 dark:border-blue-800/50' : 'border-slate-200 dark:border-slate-800'
             }`}
           >

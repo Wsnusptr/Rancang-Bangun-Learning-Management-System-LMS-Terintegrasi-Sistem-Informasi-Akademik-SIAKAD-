@@ -291,13 +291,13 @@ export default function PmbInteractivePortal() {
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Unduhan & Brosur</h3>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Unduh brosur resmi dan panduan PMB.</p>
-                        <div className="grid gap-4 sm:grid-cols-2 items-start">
+                        <div className="columns-1 sm:columns-2 gap-4 space-y-4">
                             {data?.resources?.length > 0 ? data.resources.map((item: any) => {
                                 const fileType = getFileType(item.file_url)
                                 const ext = getFileExt(item.file_url)
                                 return (
                                     <a key={item.id} href={item.file_url} target="_blank" rel="noopener noreferrer"
-                                        className="group block rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-[#121B2E] overflow-hidden hover:border-blue-400 dark:hover:border-blue-600 transition-all shadow-sm hover:shadow-md">
+                                        className="break-inside-avoid group block rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-[#121B2E] overflow-hidden hover:border-blue-400 dark:hover:border-blue-600 transition-all shadow-sm hover:shadow-md">
                                         {/* Preview area */}
                                         {fileType === 'image' ? (
                                             <div className="w-full bg-slate-100 dark:bg-slate-800 flex justify-center items-center overflow-hidden">
