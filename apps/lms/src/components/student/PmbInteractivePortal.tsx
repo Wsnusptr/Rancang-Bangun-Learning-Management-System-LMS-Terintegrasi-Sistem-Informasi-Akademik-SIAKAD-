@@ -3,8 +3,40 @@
 import { useState, useEffect } from 'react'
 import { 
     BookOpen, Calendar, HelpCircle, DollarSign, FileCheck, 
-    MessageSquare, Building, Phone, Download, Loader2, GraduationCap 
+    MessageSquare, Building, Phone, Download, Loader2, GraduationCap,
+    Mail, Globe, Youtube, Linkedin, Twitter, Instagram, Send, FileArchive, FileText, Image as ImageIcon, ExternalLink
 } from 'lucide-react'
+
+// --- Platform icon/color mapper ---
+function getPlatformMeta(platform: string): { icon: React.ReactNode; color: string; bg: string } {
+    const p = platform.toLowerCase()
+    if (p.includes('instagram')) return { icon: <Instagram className="h-3.5 w-3.5" />, color: 'text-pink-600', bg: 'bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/40 dark:to-purple-900/40' }
+    if (p.includes('whatsapp') || p.includes('wa')) return { icon: <Send className="h-3.5 w-3.5" />, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/30' }
+    if (p.includes('email') || p.includes('gmail') || p.includes('mail')) return { icon: <Mail className="h-3.5 w-3.5" />, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/30' }
+    if (p.includes('youtube')) return { icon: <Youtube className="h-3.5 w-3.5" />, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/30' }
+    if (p.includes('linkedin')) return { icon: <Linkedin className="h-3.5 w-3.5" />, color: 'text-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/30' }
+    if (p.includes('twitter') || p.includes('x.com') || p.includes('/ x')) return { icon: <Twitter className="h-3.5 w-3.5" />, color: 'text-slate-800 dark:text-white', bg: 'bg-slate-100 dark:bg-slate-800' }
+    if (p.includes('tiktok')) return { icon: <MessageSquare className="h-3.5 w-3.5" />, color: 'text-slate-800 dark:text-white', bg: 'bg-slate-100 dark:bg-slate-800' }
+    if (p.includes('website') || p.includes('web') || p.includes('http')) return { icon: <Globe className="h-3.5 w-3.5" />, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/30' }
+    if (p.includes('telepon') || p.includes('phone') || p.includes('telp') || p.includes('hotline')) return { icon: <Phone className="h-3.5 w-3.5" />, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/30' }
+    return { icon: <Globe className="h-3.5 w-3.5" />, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' }
+}
+
+// --- File type detector ---
+function getFileType(url: string): 'image' | 'pdf' | 'other' {
+    if (!url) return 'other'
+    const u = url.toLowerCase().split('?')[0]
+    if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(u)) return 'image'
+    if (/\.pdf$/.test(u)) return 'pdf'
+    return 'other'
+}
+
+function getFileExt(url: string): string {
+    if (!url) return 'FILE'
+    const u = url.toLowerCase().split('?')[0]
+    const match = u.match(/\.([a-z0-9]+)$/)
+    return match ? match[1].toUpperCase() : 'FILE'
+}
 
 const MENU_ITEMS = [
     { id: 'programs', label: 'Program Studi', icon: BookOpen },
@@ -144,18 +176,23 @@ export default function PmbInteractivePortal() {
                 {/* 3. BIAYA & BEASISWA */}
                 {activeMenu === 'scholarships' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Informasi Biaya & Beasiswa</h3>
-                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Berbagai jalur beasiswa dan bantuan biaya pendidikan.</p>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {data?.scholarships?.length > 0 ? data.scholarships.map((item: any) => (
-                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 hover:border-blue-500 transition-colors">
-                                    <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-1.5">{item.scholarship_name}</h4>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30 px-2 py-0.5 rounded">{item.amount}</span>
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Biaya & Beasiswa</h3>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Jalur beasiswa dan bantuan biaya pendidikan yang tersedia.</p>
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                            {data?.scholarships?.length > 0 ? data.scholarships.map((item: any, i: number) => (
+                                <div key={item.id} className="flex items-center justify-between px-4 py-3 bg-white dark:bg-[#121B2E] hover:bg-slate-50 dark:hover:bg-[#0D1424] transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-500 shrink-0">{i + 1}</span>
+                                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{item.scholarship_name}</span>
                                     </div>
+                                    {item.amount && (
+                                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 px-2 py-0.5 rounded-full shrink-0 ml-3">{item.amount}</span>
+                                    )}
                                 </div>
                             )) : (
-                                <p className="text-xs text-slate-400 col-span-full">Data beasiswa belum tersedia.</p>
+                                <div className="px-4 py-8 text-center bg-white dark:bg-[#121B2E]">
+                                    <p className="text-xs text-slate-400">Data beasiswa belum tersedia.</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -225,16 +262,26 @@ export default function PmbInteractivePortal() {
                 {activeMenu === 'contacts' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Pusat Layanan PMB</h3>
-                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Hubungi kami melalui saluran berikut untuk informasi lebih lanjut.</p>
-                        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                            {data?.contacts?.length > 0 ? data.contacts.map((item: any) => (
-                                <div key={item.id} className="p-4 rounded-xl bg-blue-50 dark:bg-[#0D1424] border border-blue-100 dark:border-blue-900/50 flex flex-col items-center justify-center text-center">
-                                    <Phone className="h-6 w-6 text-blue-600 mb-2" />
-                                    <h4 className="text-[11px] font-bold text-slate-800 dark:text-white">{item.platform}</h4>
-                                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{item.contact_detail}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Hubungi kami untuk informasi pendaftaran lebih lanjut.</p>
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                            {data?.contacts?.length > 0 ? data.contacts.map((item: any) => {
+                                const meta = getPlatformMeta(item.platform)
+                                return (
+                                    <div key={item.id} className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-[#121B2E] hover:bg-slate-50 dark:hover:bg-[#0D1424] transition-colors">
+                                        <div className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${meta.bg} ${meta.color}`}>
+                                            {meta.icon}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.platform}</p>
+                                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{item.contact_detail}</p>
+                                        </div>
+                                        <ExternalLink className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+                                    </div>
+                                )
+                            }) : (
+                                <div className="px-4 py-8 text-center bg-white dark:bg-[#121B2E]">
+                                    <p className="text-xs text-slate-400">Data kontak belum tersedia.</p>
                                 </div>
-                            )) : (
-                                <p className="text-xs text-slate-400 col-span-full">Data kontak belum tersedia.</p>
                             )}
                         </div>
                     </div>
@@ -243,23 +290,47 @@ export default function PmbInteractivePortal() {
                 {/* 8. BROSUR & MEDIA */}
                 {activeMenu === 'resources' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Unduhan Media & Brosur</h3>
-                        <p className="text-[10px] md:text-[11px] text-slate-500 dark:text-slate-400 mb-5 md:mb-6">Unduh brosur resmi dan panduan PMB.</p>
-                        <div className="space-y-3">
-                            {data?.resources?.length > 0 ? data.resources.map((item: any) => (
-                                <div key={item.id} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0D1424] border border-slate-200 dark:border-slate-800/60 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-rose-100 text-rose-600 dark:bg-rose-900/30 p-2 rounded-lg">
-                                            <Download className="h-4 w-4" />
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Unduhan & Brosur</h3>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Unduh brosur resmi dan panduan PMB.</p>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {data?.resources?.length > 0 ? data.resources.map((item: any) => {
+                                const fileType = getFileType(item.file_url)
+                                const ext = getFileExt(item.file_url)
+                                return (
+                                    <a key={item.id} href={item.file_url} target="_blank" rel="noopener noreferrer"
+                                        className="group block rounded-xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-[#121B2E] overflow-hidden hover:border-blue-400 dark:hover:border-blue-600 transition-all shadow-sm hover:shadow-md">
+                                        {/* Preview area */}
+                                        {fileType === 'image' ? (
+                                            <div className="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                                <img src={item.file_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            </div>
+                                        ) : fileType === 'pdf' ? (
+                                            <div className="w-full aspect-video overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
+                                                <iframe src={`${item.file_url}#page=1&view=FitH&toolbar=0&navpanes=0`}
+                                                    className="w-full h-full pointer-events-none" title={item.title} />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                                                <span className="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase">PDF</span>
+                                            </div>
+                                        ) : (
+                                            <div className="w-full aspect-video flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0D1424]">
+                                                <FileArchive className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2" />
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{ext}</span>
+                                            </div>
+                                        )}
+                                        {/* Footer */}
+                                        <div className="flex items-center justify-between px-3 py-2.5">
+                                            <div className="min-w-0 pr-2">
+                                                <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{item.title}</p>
+                                                <p className="text-[10px] text-slate-400 uppercase font-semibold">{ext}</p>
+                                            </div>
+                                            <span className="shrink-0 flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline">
+                                                <Download className="h-3 w-3" /> Unduh
+                                            </span>
                                         </div>
-                                        <h4 className="text-[11px] font-bold text-slate-800 dark:text-white">{item.title}</h4>
-                                    </div>
-                                    <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors">
-                                        Unduh
                                     </a>
-                                </div>
-                            )) : (
-                                <p className="text-xs text-slate-400">Media unduhan belum tersedia.</p>
+                                )
+                            }) : (
+                                <p className="text-xs text-slate-400 col-span-full">Media unduhan belum tersedia.</p>
                             )}
                         </div>
                     </div>
