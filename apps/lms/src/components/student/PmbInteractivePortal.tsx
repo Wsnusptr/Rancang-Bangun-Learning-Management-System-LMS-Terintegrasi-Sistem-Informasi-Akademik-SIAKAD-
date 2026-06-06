@@ -21,12 +21,12 @@ function getPlatformMeta(platform: string): { icon: React.ReactNode; color: stri
     return { icon: <Globe className="h-3.5 w-3.5" />, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' }
 }
 
-// --- File type detector ---
-function getFileType(url: string): 'image' | 'pdf' | 'other' {
+function getFileType(url: string): 'image' | 'pdf' | 'video' | 'other' {
     if (!url) return 'other'
     const u = url.toLowerCase().split('?')[0]
     if (/\.(jpg|jpeg|png|gif|webp|svg)$/.test(u)) return 'image'
     if (/\.pdf$/.test(u)) return 'pdf'
+    if (/\.(mp4|webm|ogg|mov)$/.test(u)) return 'video'
     return 'other'
 }
 
@@ -302,6 +302,21 @@ export default function PmbInteractivePortal() {
                                         {fileType === 'image' ? (
                                             <div className="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
                                                 <img src={item.file_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                            </div>
+                                        ) : fileType === 'video' ? (
+                                            <div className="w-full aspect-video overflow-hidden bg-black relative">
+                                                <video 
+                                                    src={item.file_url} 
+                                                    className="w-full h-full object-cover pointer-events-none" 
+                                                    autoPlay 
+                                                    muted 
+                                                    loop 
+                                                    playsInline
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
+                                                    <PlayCircle className="h-10 w-10 text-white/80 group-hover:text-white transition-colors group-hover:scale-110 duration-300" />
+                                                </div>
+                                                <span className="absolute top-2 right-2 bg-purple-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase">VIDEO</span>
                                             </div>
                                         ) : fileType === 'pdf' ? (
                                             <div className="w-full aspect-video overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
