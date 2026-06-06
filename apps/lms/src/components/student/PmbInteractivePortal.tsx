@@ -4,19 +4,18 @@ import { useState, useEffect } from 'react'
 import { 
     BookOpen, Calendar, HelpCircle, DollarSign, FileCheck, 
     MessageSquare, Building, Phone, Download, Loader2, GraduationCap,
-    Mail, Globe, Youtube, Linkedin, Twitter, Instagram, Send, FileArchive, FileText, Image as ImageIcon, ExternalLink
+    Mail, Globe, PlayCircle, Link2, AtSign, Heart, Send, FileArchive, ExternalLink, Video
 } from 'lucide-react'
 
 // --- Platform icon/color mapper ---
 function getPlatformMeta(platform: string): { icon: React.ReactNode; color: string; bg: string } {
     const p = platform.toLowerCase()
-    if (p.includes('instagram')) return { icon: <Instagram className="h-3.5 w-3.5" />, color: 'text-pink-600', bg: 'bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/40 dark:to-purple-900/40' }
+    if (p.includes('instagram')) return { icon: <Heart className="h-3.5 w-3.5" />, color: 'text-pink-600', bg: 'bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/40 dark:to-purple-900/40' }
     if (p.includes('whatsapp') || p.includes('wa')) return { icon: <Send className="h-3.5 w-3.5" />, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/30' }
     if (p.includes('email') || p.includes('gmail') || p.includes('mail')) return { icon: <Mail className="h-3.5 w-3.5" />, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/30' }
-    if (p.includes('youtube')) return { icon: <Youtube className="h-3.5 w-3.5" />, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/30' }
-    if (p.includes('linkedin')) return { icon: <Linkedin className="h-3.5 w-3.5" />, color: 'text-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/30' }
-    if (p.includes('twitter') || p.includes('x.com') || p.includes('/ x')) return { icon: <Twitter className="h-3.5 w-3.5" />, color: 'text-slate-800 dark:text-white', bg: 'bg-slate-100 dark:bg-slate-800' }
-    if (p.includes('tiktok')) return { icon: <MessageSquare className="h-3.5 w-3.5" />, color: 'text-slate-800 dark:text-white', bg: 'bg-slate-100 dark:bg-slate-800' }
+    if (p.includes('youtube')) return { icon: <PlayCircle className="h-3.5 w-3.5" />, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/30' }
+    if (p.includes('linkedin')) return { icon: <Link2 className="h-3.5 w-3.5" />, color: 'text-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/30' }
+    if (p.includes('twitter') || p.includes('tiktok') || p.includes('x.com')) return { icon: <AtSign className="h-3.5 w-3.5" />, color: 'text-slate-700 dark:text-slate-200', bg: 'bg-slate-100 dark:bg-slate-800' }
     if (p.includes('website') || p.includes('web') || p.includes('http')) return { icon: <Globe className="h-3.5 w-3.5" />, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/30' }
     if (p.includes('telepon') || p.includes('phone') || p.includes('telp') || p.includes('hotline')) return { icon: <Phone className="h-3.5 w-3.5" />, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/30' }
     return { icon: <Globe className="h-3.5 w-3.5" />, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' }
