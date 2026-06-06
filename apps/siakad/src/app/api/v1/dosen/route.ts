@@ -176,9 +176,11 @@ export async function DELETE(request: NextRequest) {
     const { error: profileError } = await supabase.from('profiles').delete().eq('id', id)
     if (profileError) throw profileError
 
-    // Delete from Auth
+    // Delete from Auth (ignore if already deleted/not found)
     const { error: authError } = await supabase.auth.admin.deleteUser(id)
-    if (authError) throw authError
+    if (authError && authError.message !== 'User not found') {
+      throw authError
+    }
 
     return NextResponse.json({ success: true, message: 'Dosen berhasil dihapus.' })
   } catch (error: any) {
