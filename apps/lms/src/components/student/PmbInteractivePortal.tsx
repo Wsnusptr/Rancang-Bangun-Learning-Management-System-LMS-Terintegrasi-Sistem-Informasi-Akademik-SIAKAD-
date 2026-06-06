@@ -291,7 +291,7 @@ export default function PmbInteractivePortal() {
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <h3 className="text-[11px] md:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mb-1">Unduhan & Brosur</h3>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4">Unduh brosur resmi dan panduan PMB.</p>
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-4 sm:grid-cols-2 items-start">
                             {data?.resources?.length > 0 ? data.resources.map((item: any) => {
                                 const fileType = getFileType(item.file_url)
                                 const ext = getFileExt(item.file_url)

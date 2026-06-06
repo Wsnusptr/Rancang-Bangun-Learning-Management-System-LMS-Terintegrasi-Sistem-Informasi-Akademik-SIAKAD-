@@ -74,7 +74,7 @@ export default function PmbInfoPanel({ className = '' }: PmbInfoPanelProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 items-start">
         {items.map((item) => (
           <div
             key={item.id}
