@@ -4,6 +4,8 @@
 // ============================================================
 
 import { NextRequest } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import { successResponse, serverErrorResponse } from '@/lib/utils'
 
