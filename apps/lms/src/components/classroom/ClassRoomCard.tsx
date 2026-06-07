@@ -80,7 +80,7 @@ export default function ClassRoomCard({
           />
         </div>
 
-        <div className="relative z-30 flex h-full flex-col justify-start gap-1.5">
+        <div className="relative z-40 flex h-full flex-col justify-start gap-1.5">
           <h3 
             className="line-clamp-3 text-[14px] font-bold leading-snug text-white group-hover:underline decoration-white/30 underline-offset-4 pr-12"
             style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}

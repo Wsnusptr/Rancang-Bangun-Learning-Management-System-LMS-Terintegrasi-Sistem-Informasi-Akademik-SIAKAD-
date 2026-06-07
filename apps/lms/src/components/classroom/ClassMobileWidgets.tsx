@@ -36,6 +36,7 @@ export default function ClassMobileWidgets({
   const [showUpcoming, setShowUpcoming] = useState(false)
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false)
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false)
+  const [isFabOpen, setIsFabOpen] = useState(false)
 
   return (
     <>
@@ -92,28 +93,49 @@ export default function ClassMobileWidgets({
       {/* Floating Action Buttons Container */}
       <div className="lg:hidden fixed bottom-6 right-4 z-40 flex flex-col items-end gap-3 pointer-events-none">
         
-        {/* Calendar FAB */}
-        <button
-          onClick={() => setIsCalendarModalOpen(true)}
-          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition-transform active:scale-95 hover:bg-indigo-700"
+        {/* Sub-buttons */}
+        <div 
+          className={`flex flex-col items-end gap-3 transition-all duration-300 origin-bottom ${
+            isFabOpen 
+              ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+              : 'opacity-0 translate-y-10 scale-50 pointer-events-none'
+          }`}
         >
-          <CalendarIcon className="h-5 w-5" />
-        </button>
+          {/* Calendar FAB */}
+          <button
+            onClick={() => { setIsCalendarModalOpen(true); setIsFabOpen(false) }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition-transform active:scale-95 hover:bg-indigo-700"
+            title="Kalender"
+          >
+            <CalendarIcon className="h-5 w-5" />
+          </button>
 
-        {/* Zoom FAB */}
+          {/* Zoom FAB */}
+          <button
+            onClick={() => {
+              if (zoomLink && role === 'student') {
+                window.open(zoomLink, '_blank')
+              } else {
+                setIsZoomModalOpen(true)
+              }
+              setIsFabOpen(false)
+            }}
+            className="flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-3 text-[11px] font-black text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95"
+            title={zoomLink ? 'Zoom / Meet' : 'Zoom Kelas'}
+          >
+            <Video className="h-4 w-4" />
+            {zoomLink ? 'Zoom / Meet' : (role === 'lecturer' ? 'Buat Zoom' : 'Zoom Kelas')}
+            {zoomLink && role === 'student' && <ExternalLink className="h-3 w-3 ml-1" />}
+          </button>
+        </div>
+
+        {/* Main Toggle FAB */}
         <button
-          onClick={() => {
-            if (zoomLink && role === 'student') {
-              window.open(zoomLink, '_blank')
-            } else {
-              setIsZoomModalOpen(true)
-            }
-          }}
-          className="pointer-events-auto flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-3 text-[11px] font-black text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95"
+          onClick={() => setIsFabOpen(!isFabOpen)}
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-xl transition-transform active:scale-95 z-50 dark:bg-slate-700"
+          title="Tampilkan Menu"
         >
-          <Video className="h-4 w-4" />
-          {zoomLink ? 'Zoom / Meet' : (role === 'lecturer' ? 'Buat Zoom' : 'Zoom Kelas')}
-          {zoomLink && role === 'student' && <ExternalLink className="h-3 w-3 ml-1" />}
+          <ChevronUp className={`h-6 w-6 transition-transform duration-300 ${isFabOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
