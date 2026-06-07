@@ -101,22 +101,20 @@ export default function ClassMobileWidgets({
         </button>
 
         {/* Zoom FAB */}
-        {(zoomLink || role === 'lecturer') && (
-          <button
-            onClick={() => {
-              if (zoomLink && role === 'student') {
-                window.open(zoomLink, '_blank')
-              } else {
-                setIsZoomModalOpen(true)
-              }
-            }}
-            className="pointer-events-auto flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-3 text-[11px] font-black text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95"
-          >
-            <Video className="h-4 w-4" />
-            {zoomLink ? 'Zoom / Meet' : 'Buat Zoom'}
-            {zoomLink && role === 'student' && <ExternalLink className="h-3 w-3 ml-1" />}
-          </button>
-        )}
+        <button
+          onClick={() => {
+            if (zoomLink && role === 'student') {
+              window.open(zoomLink, '_blank')
+            } else {
+              setIsZoomModalOpen(true)
+            }
+          }}
+          className="pointer-events-auto flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-3 text-[11px] font-black text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95"
+        >
+          <Video className="h-4 w-4" />
+          {zoomLink ? 'Zoom / Meet' : (role === 'lecturer' ? 'Buat Zoom' : 'Zoom Kelas')}
+          {zoomLink && role === 'student' && <ExternalLink className="h-3 w-3 ml-1" />}
+        </button>
       </div>
 
       {/* Mobile Zoom Modal */}

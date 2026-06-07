@@ -843,27 +843,6 @@ export default function LecturerClasswork({ params }: Params) {
         </div>
       </div>
 
-      {/* Mobile Floating Zoom FAB */}
-      {zoomLink ? (
-        <a
-          href={zoomLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lg:hidden fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-[10px] font-black text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95"
-        >
-          <Video className="h-3.5 w-3.5" />
-          Gabung Zoom
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      ) : (
-        <button
-          onClick={() => setIsEditingZoom(true)}
-          className="lg:hidden fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-slate-700 hover:bg-slate-800 px-4 py-2.5 text-[10px] font-black text-white shadow-lg transition-all active:scale-95"
-        >
-          <Video className="h-3.5 w-3.5" />
-          Buat Zoom
-        </button>
-      )}
 
       {showCreateModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm z-50 p-4">
