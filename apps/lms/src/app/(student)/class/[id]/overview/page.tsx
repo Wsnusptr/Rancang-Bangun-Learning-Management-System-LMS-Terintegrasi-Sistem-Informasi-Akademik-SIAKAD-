@@ -3,6 +3,8 @@
 import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
+import ClassSidebar from '@/components/classroom/ClassSidebar'
+import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 import {
   Loader2, AlertCircle, FileText, Send,
   MessageSquare, Calendar, Pin, Download, Video, Clock,
@@ -195,78 +197,24 @@ export default function StudentClassOverview({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
-        {/* Left Sidebar */}
-        <div className="space-y-5 lg:col-span-1">
-          {/* Zoom Card (Hidden on Mobile) */}
-          <div className="hidden lg:block rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#121B2E]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 dark:text-white flex items-center gap-2">
-                <Video className="h-4 w-4 text-blue-600" />
-                Zoom / Meet Online
-              </span>
-            </div>
-            <div className="mt-3.5">
-              {zoomLink ? (
-                <div className="space-y-2">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">Status: Kelas Aktif</p>
-                  <a
-                    href={zoomLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full mt-1.5 flex items-center justify-center gap-1.5 rounded-full border border-blue-600 hover:bg-blue-50/50 py-2 text-[11px] font-black text-blue-600 transition-all cursor-pointer"
-                  >
-                    Gabung Pertemuan
-                  </a>
-                </div>
-              ) : (
-                <div className="text-center py-2.5 space-y-1.5">
-                  <div className="flex items-center justify-center gap-1 text-[11px] text-slate-500 font-extrabold dark:text-gray-400">
-                    <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 animate-pulse" />
-                    Belum Ada Jadwal
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+      <ClassMobileWidgets 
+        classId={id} 
+        role="student" 
+        classCode={classDetail.class_code} 
+        enrolledCount={classDetail.enrolled_count} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+      />
 
-          {/* Real-time Upcoming Card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#121B2E]">
-            <h3 className="text-xs font-black text-slate-800 dark:text-white leading-none">Mendatang</h3>
-            <div className="mt-3.5 space-y-3">
-              {upcomingAssignments.length === 0 ? (
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-semibold leading-relaxed">
-                  Hore, tidak ada tugas yang perlu segera diselesaikan!
-                </p>
-              ) : (
-                <div className="space-y-2.5">
-                  <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-2">
-                    Ada tugas untukmu:
-                  </p>
-                  {upcomingAssignments.map((a) => (
-                    <div key={a.id} className="min-w-0 text-[10px] font-bold text-slate-650 dark:text-gray-350 bg-slate-50 dark:bg-[#152033] p-2 rounded">
-                      <p className="text-slate-800 dark:text-white truncate font-extrabold">{a.title}</p>
-                      <span className="text-[9px] text-rose-500 font-bold block mt-0.5">
-                        Batas: {a.due_date ? formatDate(a.due_date) : 'Tidak ada waktu'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {upcomingAssignments.length > 0 && (
-                <div className="border-t border-slate-100 pt-2.5 text-right dark:border-slate-800/80">
-                  <Link
-                    href={`/class/${id}/classwork`}
-                    className="text-[9px] font-black text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest"
-                  >
-                    Lihat semua
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
+        <ClassSidebar 
+          classId={id} 
+          role="student" 
+          classCode={classDetail.class_code} 
+          enrolledCount={classDetail.enrolled_count} 
+          zoomLink={zoomLink} 
+          upcomingAssignments={upcomingAssignments} 
+        />
 
         {/* Right Content - Unified Feed */}
         <div className="lg:col-span-3 space-y-4">
@@ -376,64 +324,6 @@ export default function StudentClassOverview({ params }: Params) {
         </div>
       </div>
 
-      {/* Mobile Floating Action Button (FAB) for Zoom */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setIsZoomModalOpen(true)}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 active:scale-95 transition-transform"
-        >
-          <Video className="h-5 w-5" />
-        </button>
-      </div>
-
-      {/* Mobile Zoom Modal */}
-      {isZoomModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm lg:hidden select-none">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl dark:bg-[#121B2E]">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20">
-                <Video className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-[13px] font-black text-slate-800 dark:text-white leading-none">Zoom / Meet Online</h3>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Akses pertemuan virtual kelas ini</p>
-              </div>
-            </div>
-            
-            <div className="mt-4">
-              {zoomLink ? (
-                <div className="space-y-3">
-                  <div className="rounded-lg bg-green-50 p-3 text-center dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
-                    <span className="text-[10px] font-black uppercase text-green-600 dark:text-green-400">Status: Kelas Tersedia</span>
-                  </div>
-                  <a
-                    href={zoomLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[11px] font-black text-white hover:bg-blue-700 transition-colors"
-                  >
-                    <Video className="h-3.5 w-3.5" />
-                    Buka Link Zoom
-                  </a>
-                </div>
-              ) : (
-                <div className="rounded-lg bg-slate-50 p-4 text-center dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                  <Clock className="mx-auto h-6 w-6 text-slate-400 animate-pulse mb-2" />
-                  <h4 className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Belum Ada Link</h4>
-                  <p className="mt-1 text-[9px] text-slate-500">Dosen belum menyertakan link pertemuan virtual.</p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setIsZoomModalOpen(false)}
-              className="mt-4 w-full rounded-xl border border-slate-200 py-2.5 text-[10px] font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

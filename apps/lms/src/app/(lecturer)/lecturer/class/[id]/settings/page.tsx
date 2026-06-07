@@ -4,6 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
 import { Loader2, Settings2, Save, AlertCircle, CheckCircle2, Percent, Calculator, Users } from 'lucide-react'
+import ClassSidebar from '@/components/classroom/ClassSidebar'
+import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -32,6 +34,14 @@ export default function LecturerSettingsPage({ params }: Params) {
   const [savingBackup, setSavingBackup] = useState(false)
   const [backupError, setBackupError] = useState<string | null>(null)
   const [backupSuccess, setBackupSuccess] = useState<string | null>(null)
+
+  // Zoom and Assignments states for Sidebar
+  const [zoomLink, setZoomLink] = useState('')
+  const [zoomInput, setZoomInput] = useState('')
+  const [isEditingZoom, setIsEditingZoom] = useState(false)
+  const [zoomError, setZoomError] = useState<string | null>(null)
+  const [realDescription, setRealDescription] = useState('')
+  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([])
 
   const loadData = async () => {
     try {
@@ -71,6 +81,41 @@ export default function LecturerSettingsPage({ params }: Params) {
       if (lecturersRes.success) {
         setLecturers(lecturersRes.data || [])
       }
+
+      // Load Zoom Link & Upcoming Assignments
+      try {
+        const assignmentsRes = await fetch(`/api/classes/${id}/assignments`)
+        const assignmentsJson = await assignmentsRes.json()
+        if (assignmentsJson.success && Array.isArray(assignmentsJson.data)) {
+          const upcoming = assignmentsJson.data.filter((a: any) => {
+            if (!a.due_date) return true
+            return new Date(a.due_date).getTime() > Date.now()
+          }).slice(0, 3)
+          setUpcomingAssignments(upcoming)
+        }
+      } catch (err) {}
+
+      try {
+        const { data: classData } = await supabase
+          .from('classes')
+          .select('description')
+          .eq('id', id)
+          .single()
+        if (classData && classData.description) {
+          if (classData.description.includes('||ZOOM||')) {
+            const parts = classData.description.split('||ZOOM||')
+            setZoomLink(parts[1]?.trim() || '')
+            setRealDescription(parts[0]?.trim() || '')
+          } else if (classData.description.startsWith('http')) {
+            setZoomLink(classData.description)
+            setRealDescription('')
+          } else {
+            setRealDescription(classData.description)
+            setZoomLink('')
+          }
+        }
+      } catch (err) {}
+
     } catch (err) {
       console.error('Failed to load settings:', err)
     } finally {
@@ -81,6 +126,48 @@ export default function LecturerSettingsPage({ params }: Params) {
   useEffect(() => {
     loadData()
   }, [id])
+
+  const handleSaveZoomLink = async () => {
+    setZoomError(null)
+    if (zoomInput && !zoomInput.startsWith('http')) {
+      setZoomError('Link Zoom/Meet harus diawali dengan http:// atau https://')
+      return
+    }
+
+    const supabase = createClient()
+    const combinedDesc = `${realDescription}||ZOOM||${zoomInput}`
+
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .update({ description: combinedDesc })
+        .eq('id', id)
+
+      if (error) throw error
+      setZoomLink(zoomInput)
+      setIsEditingZoom(false)
+    } catch (err) {
+      setZoomError('Gagal menyimpan link pertemuan')
+    }
+  }
+
+  const handleDeleteZoomLink = async () => {
+    if (!confirm('Apakah Anda yakin ingin menghapus link Zoom/Meet kelas ini?')) return
+    const supabase = createClient()
+
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .update({ description: realDescription })
+        .eq('id', id)
+
+      if (error) throw error
+      setZoomLink('')
+      setZoomInput('')
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const totalWeight = weightAttendance + weightAssignments + weightQuiz + weightMidterm + weightFinal
 
@@ -176,8 +263,45 @@ export default function LecturerSettingsPage({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
-      <div className="max-w-3xl mx-auto px-2 sm:px-4 md:px-6">
-         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 sm:mb-6">
+      <ClassMobileWidgets 
+        classId={id} 
+        role="lecturer" 
+        classCode={classDetail.class_code} 
+        enrolledCount={classDetail.enrolled_count} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+        zoomProps={{
+          isEditingZoom,
+          setIsEditingZoom,
+          zoomInput,
+          setZoomInput,
+          handleSaveZoomLink,
+          handleDeleteZoomLink,
+          zoomError
+        }}
+      />
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
+        <ClassSidebar 
+          classId={id} 
+          role="lecturer" 
+          classCode={classDetail.class_code} 
+          enrolledCount={classDetail.enrolled_count} 
+          zoomLink={zoomLink} 
+          upcomingAssignments={upcomingAssignments}
+          zoomProps={{
+            isEditingZoom,
+            setIsEditingZoom,
+            zoomInput,
+            setZoomInput,
+            handleSaveZoomLink,
+            handleDeleteZoomLink,
+            zoomError
+          }}
+        />
+
+        <div className="lg:col-span-3 space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 sm:mb-6">
             <h2 className="text-[11px] sm:text-[13px] font-black uppercase text-slate-800 dark:text-white tracking-widest flex items-center gap-2">
                <Settings2 className="h-4 w-4 text-blue-600" /> Pengaturan Kelas
             </h2>
@@ -321,9 +445,10 @@ export default function LecturerSettingsPage({ params }: Params) {
                         </button>
                      </div>
                 </form>
-             </div>
-          </div>
-       </div>
+              </div>
+           </div>
+        </div>
+      </div>
     </div>
   )
 }

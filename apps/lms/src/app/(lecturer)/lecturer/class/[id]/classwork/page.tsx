@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
+import ClassSidebar from '@/components/classroom/ClassSidebar'
+import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 import {
   Loader2, AlertCircle, FileText, CheckCircle2, Calendar, Plus,
   Trash2, ClipboardList, Info, UserCheck, GraduationCap, X, ChevronDown, ChevronUp,
@@ -135,6 +137,13 @@ export default function LecturerClasswork({ params }: Params) {
   const [gradingLoading, setGradingLoading] = useState(false)
   const [gradingError, setGradingError] = useState<string | null>(null)
   const [gradingSuccess, setGradingSuccess] = useState<string | null>(null)
+
+  const upcomingAssignments = useMemo(() => {
+    return assignments.filter((a: any) => {
+      if (!a.due_date) return true
+      return new Date(a.due_date).getTime() > Date.now()
+    }).slice(0, 3)
+  }, [assignments])
 
   const loadClassDetail = async () => {
     const supabase = createClient()
@@ -466,103 +475,43 @@ export default function LecturerClasswork({ params }: Params) {
         enrolledCount={classDetail?.enrolled_count || 0}
       />
 
+      <ClassMobileWidgets 
+        classId={id} 
+        role="lecturer" 
+        classCode={classDetail?.class_code || ''} 
+        enrolledCount={classDetail?.enrolled_count || 0} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+        zoomProps={{
+          isEditingZoom,
+          setIsEditingZoom,
+          zoomInput,
+          setZoomInput,
+          handleSaveZoomLink,
+          handleDeleteZoomLink,
+          zoomError
+        }}
+      />
+
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
         
-        <div className="hidden lg:block space-y-5 lg:col-span-1">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#121B2E]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 dark:text-white flex items-center gap-2">
-                <Video className="h-4 w-4 text-blue-600" />
-                Zoom / Meet Online
-              </span>
-              {!isEditingZoom && (
-                <button
-                  onClick={() => {
-                    setZoomInput(zoomLink)
-                    setIsEditingZoom(true)
-                  }}
-                  className="text-slate-400 hover:text-slate-650 p-1"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-
-            {zoomError && (
-              <p className="mt-2 text-[8px] font-bold text-red-650">{zoomError}</p>
-            )}
-
-            <div className="mt-3.5">
-              {isEditingZoom ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    required
-                    value={zoomInput}
-                    onChange={(e) => setZoomInput(e.target.value)}
-                    placeholder="https://zoom.us/j/..."
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 px-3 text-[10px] outline-none focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-[#18233C] dark:text-white"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      onClick={() => setIsEditingZoom(false)}
-                      className="rounded px-2.5 py-1 text-[9px] font-bold text-slate-400 border border-slate-200 hover:bg-slate-50"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      onClick={handleSaveZoomLink}
-                      className="rounded bg-blue-600 px-3 py-1 text-[9px] font-bold text-white hover:bg-blue-700"
-                    >
-                      Simpan
-                    </button>
-                  </div>
-                </div>
-              ) : zoomLink ? (
-                <div className="space-y-2">
-                  <a
-                    href={zoomLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-1.5 rounded-full border border-blue-600 hover:bg-blue-50/50 py-2 text-[11px] font-black text-blue-600 transition-all cursor-pointer"
-                  >
-                    Gabung Pertemuan
-                  </a>
-                  <button
-                    onClick={handleDeleteZoomLink}
-                    className="w-full text-center text-[9px] text-red-600 hover:text-red-700 font-bold tracking-wide transition-colors uppercase pt-1"
-                  >
-                    Hapus Link
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-2.5">
-                  <button
-                    onClick={() => setIsEditingZoom(true)}
-                    className="w-full flex items-center justify-center gap-1 border border-dashed border-slate-200 rounded-lg py-2.5 text-[10px] font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Buat Link Pertemuan
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#121B2E]">
-            <h3 className="text-xs font-black text-slate-800 dark:text-white leading-none">Status Kelas</h3>
-            <ul className="mt-3.5 space-y-2 text-[10px] font-semibold text-slate-500 dark:text-gray-400">
-              <li className="flex justify-between">
-                <span>Kode Gabung</span>
-                <span className="text-slate-850 dark:text-white font-black">{classDetail?.class_code}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Mahasiswa Aktif</span>
-                <span className="text-slate-850 dark:text-white font-black">{classDetail?.enrolled_count} orang</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <ClassSidebar 
+          classId={id} 
+          role="lecturer" 
+          classCode={classDetail?.class_code || ''} 
+          enrolledCount={classDetail?.enrolled_count || 0} 
+          zoomLink={zoomLink} 
+          upcomingAssignments={upcomingAssignments}
+          zoomProps={{
+            isEditingZoom,
+            setIsEditingZoom,
+            zoomInput,
+            setZoomInput,
+            handleSaveZoomLink,
+            handleDeleteZoomLink,
+            zoomError
+          }}
+        />
 
         <div className="lg:col-span-3 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">

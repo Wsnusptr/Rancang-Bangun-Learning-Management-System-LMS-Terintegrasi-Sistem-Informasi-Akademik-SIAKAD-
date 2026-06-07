@@ -9,6 +9,8 @@ import {
   Users, MapPin, Sparkles, LogIn, Power, ArrowRight 
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import ClassSidebar from '@/components/classroom/ClassSidebar'
+import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 import Image from 'next/image'
 
 interface Params {
@@ -88,6 +90,14 @@ export default function LecturerClassAttendance({ params }: Params) {
   // Manual check-in states
   const [selectedStudentId, setSelectedStudentId] = useState('')
   const [manualLoading, setManualLoading] = useState(false)
+
+  // Zoom and Assignments states for Sidebar
+  const [zoomLink, setZoomLink] = useState('')
+  const [zoomInput, setZoomInput] = useState('')
+  const [isEditingZoom, setIsEditingZoom] = useState(false)
+  const [zoomError, setZoomError] = useState<string | null>(null)
+  const [realDescription, setRealDescription] = useState('')
+  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([])
 
   const loadClassDetail = async () => {
     const supabase = createClient()
@@ -193,10 +203,96 @@ export default function LecturerClassAttendance({ params }: Params) {
     }
   }
 
+  const loadAssignments = async () => {
+    try {
+      const res = await fetch(`/api/classes/${id}/assignments`)
+      const json = await res.json()
+      if (json.success && Array.isArray(json.data)) {
+        const upcoming = json.data.filter((a: any) => {
+          if (!a.due_date) return true
+          return new Date(a.due_date).getTime() > Date.now()
+        }).slice(0, 3)
+        setUpcomingAssignments(upcoming)
+      }
+    } catch (err) {}
+  }
+
+  const loadZoomLink = async () => {
+    const supabase = createClient()
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('description')
+        .eq('id', id)
+        .single()
+      if (data && data.description) {
+        if (data.description.includes('||ZOOM||')) {
+          const parts = data.description.split('||ZOOM||')
+          setZoomLink(parts[1]?.trim() || '')
+          setRealDescription(parts[0]?.trim() || '')
+        } else if (data.description.startsWith('http')) {
+          setZoomLink(data.description)
+          setRealDescription('')
+        } else {
+          setRealDescription(data.description)
+          setZoomLink('')
+        }
+      }
+    } catch (err) {}
+  }
+
+  const handleSaveZoomLink = async () => {
+    setZoomError(null)
+    if (zoomInput && !zoomInput.startsWith('http')) {
+      setZoomError('Link Zoom/Meet harus diawali dengan http:// atau https://')
+      return
+    }
+
+    const supabase = createClient()
+    const combinedDesc = `${realDescription}||ZOOM||${zoomInput}`
+
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .update({ description: combinedDesc })
+        .eq('id', id)
+
+      if (error) throw error
+      setZoomLink(zoomInput)
+      setIsEditingZoom(false)
+    } catch (err) {
+      setZoomError('Gagal menyimpan link pertemuan')
+    }
+  }
+
+  const handleDeleteZoomLink = async () => {
+    if (!confirm('Apakah Anda yakin ingin menghapus link Zoom/Meet kelas ini?')) return
+    const supabase = createClient()
+
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .update({ description: realDescription })
+        .eq('id', id)
+
+      if (error) throw error
+      setZoomLink('')
+      setZoomInput('')
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   useEffect(() => {
     async function init() {
       setLoading(true)
-      await Promise.all([loadClassDetail(), checkActiveSession(), loadStudents()])
+      await Promise.all([
+        loadClassDetail(), 
+        checkActiveSession(), 
+        loadStudents(),
+        loadAssignments(),
+        loadZoomLink()
+      ])
       setLoading(false)
     }
     init()
@@ -365,9 +461,47 @@ export default function LecturerClassAttendance({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
-      <div className="grid gap-6 sm:gap-8 grid-cols-1 lg:grid-cols-3">
-        {/* Left Side: Create / Open Form or QR Code Presentation */}
-        <div className="lg:col-span-1 space-y-6">
+      <ClassMobileWidgets 
+        classId={id} 
+        role="lecturer" 
+        classCode={classDetail.class_code} 
+        enrolledCount={classDetail.enrolled_count} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+        zoomProps={{
+          isEditingZoom,
+          setIsEditingZoom,
+          zoomInput,
+          setZoomInput,
+          handleSaveZoomLink,
+          handleDeleteZoomLink,
+          zoomError
+        }}
+      />
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
+        <ClassSidebar 
+          classId={id} 
+          role="lecturer" 
+          classCode={classDetail.class_code} 
+          enrolledCount={classDetail.enrolled_count} 
+          zoomLink={zoomLink} 
+          upcomingAssignments={upcomingAssignments}
+          zoomProps={{
+            isEditingZoom,
+            setIsEditingZoom,
+            zoomInput,
+            setZoomInput,
+            handleSaveZoomLink,
+            handleDeleteZoomLink,
+            zoomError
+          }}
+        />
+
+        <div className="lg:col-span-3">
+          <div className="grid gap-6 sm:gap-8 grid-cols-1 lg:grid-cols-3">
+            {/* Left Side: Create / Open Form or QR Code Presentation */}
+            <div className="lg:col-span-1 space-y-6">
           
           {/* Sesi Tertutup / Form Pembukaan */}
           {!activeSession ? (
@@ -588,6 +722,8 @@ export default function LecturerClassAttendance({ params }: Params) {
               </div>
             )}
           </div>
+        </div>
+      </div>
         </div>
       </div>
     </div>
