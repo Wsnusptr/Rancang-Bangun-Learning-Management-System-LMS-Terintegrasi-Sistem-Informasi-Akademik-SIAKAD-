@@ -2146,126 +2146,197 @@ export default function SiakadClientDashboard({
 
               {/* Sub-Tab Content 1: Setting Periode */}
               {subSettingTab === 'periode' && (
-                <div className="animate-fade-in max-w-xl mx-auto relative z-10">
-                  {/* Form Tambah Periode Manual */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#121B2E]">
-                    <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                      <PlusCircle className="h-4 w-4 text-blue-500" />
-                      Input Periode Manual
-                    </h3>
+                <div className="animate-fade-in grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
+                  {/* Bagian Kiri: Form Input */}
+                  <div className="xl:col-span-1">
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#121B2E]">
+                      <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                        <PlusCircle className="h-4 w-4 text-blue-500" />
+                        Input Periode Manual
+                      </h3>
 
-                    {semError && (
-                      <div className="mb-4 flex items-start gap-2 rounded-lg bg-red-50 p-3 text-[10px] text-red-700 border border-red-100">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-red-500" />
-                        {semError}
-                      </div>
-                    )}
+                      {semError && (
+                        <div className="mb-4 flex items-start gap-2 rounded-lg bg-red-50 p-3 text-[10px] text-red-700 border border-red-100">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-red-500" />
+                          {semError}
+                        </div>
+                      )}
 
-                    {semSuccess && (
-                      <div className="mb-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-[10px] text-emerald-700 border border-emerald-100">
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald-500" />
-                        {semSuccess}
-                      </div>
-                    )}
+                      {semSuccess && (
+                        <div className="mb-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-[10px] text-emerald-700 border border-emerald-100">
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald-500" />
+                          {semSuccess}
+                        </div>
+                      )}
 
-                    <form onSubmit={handleCreateSemester} className="space-y-4">
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kode Semester</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 20261"
-                          value={semForm.code}
-                          onChange={(e) => setSemForm({ ...semForm, code: e.target.value })}
-                          className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
-                        />
-                      </div>
+                      <form onSubmit={handleCreateSemester} className="space-y-4">
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kode Semester</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 20261"
+                            value={semForm.code}
+                            onChange={(e) => setSemForm({ ...semForm, code: e.target.value })}
+                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nama Semester</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Semester Ganjil 2026/2027"
-                          value={semForm.name}
-                          onChange={(e) => setSemForm({ ...semForm, name: e.target.value })}
-                          className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nama Semester</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Semester Ganjil 2026/2027"
+                            value={semForm.name}
+                            onChange={(e) => setSemForm({ ...semForm, name: e.target.value })}
+                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tahun Akademik</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 2026/2027"
-                          value={semForm.academicYear}
-                          onChange={(e) => setSemForm({ ...semForm, academicYear: e.target.value })}
-                          className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tahun Akademik</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 2026/2027"
+                            value={semForm.academicYear}
+                            onChange={(e) => setSemForm({ ...semForm, academicYear: e.target.value })}
+                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipe Semester</label>
-                        <select
-                          value={semForm.semesterType}
-                          onChange={(e) => setSemForm({ ...semForm, semesterType: e.target.value })}
-                          className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipe Semester</label>
+                          <select
+                            value={semForm.semesterType}
+                            onChange={(e) => setSemForm({ ...semForm, semesterType: e.target.value })}
+                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-800 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                          >
+                            <option value="Ganjil">Ganjil</option>
+                            <option value="Genap">Genap</option>
+                            <option value="Pendek">Pendek</option>
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Mulai</label>
+                            <input
+                              type="date"
+                              required
+                              value={semForm.startDate}
+                              onChange={(e) => setSemForm({ ...semForm, startDate: e.target.value })}
+                              className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-850 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Selesai</label>
+                            <input
+                              type="date"
+                              required
+                              value={semForm.endDate}
+                              onChange={(e) => setSemForm({ ...semForm, endDate: e.target.value })}
+                              className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-850 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1.5">
+                          <input
+                            type="checkbox"
+                            id="isActive"
+                            checked={semForm.isActive}
+                            onChange={(e) => setSemForm({ ...semForm, isActive: e.target.checked })}
+                            className="rounded border-slate-250 bg-slate-50 text-blue-600 focus:ring-blue-500"
+                          />
+                          <label htmlFor="isActive" className="text-[10px] font-bold text-slate-600 dark:text-slate-350 cursor-pointer select-none">
+                            Aktifkan langsung
+                          </label>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={semSubmitting}
+                          className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 py-2 px-4 text-xs font-black text-white shadow-sm transition-colors cursor-pointer disabled:opacity-50 mt-2"
                         >
-                          <option value="Ganjil">Ganjil</option>
-                          <option value="Genap">Genap</option>
-                          <option value="Pendek">Pendek</option>
-                        </select>
+                          {semSubmitting ? (
+                            <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Menyimpan...</>
+                          ) : (
+                            'Simpan Periode'
+                          )}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                  
+                  {/* Bagian Kanan: Daftar Periode */}
+                  <div className="xl:col-span-2">
+                    <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-[#121B2E] overflow-hidden flex flex-col h-full max-h-[600px]">
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+                        <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4 text-blue-500" />
+                          Daftar Periode Akademik
+                        </h3>
+                        <span className="inline-flex items-center justify-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                          {semestersCatalog?.length || 0} Periode
+                        </span>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Mulai</label>
-                          <input
-                            type="date"
-                            required
-                            value={semForm.startDate}
-                            onChange={(e) => setSemForm({ ...semForm, startDate: e.target.value })}
-                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-850 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Selesai</label>
-                          <input
-                            type="date"
-                            required
-                            value={semForm.endDate}
-                            onChange={(e) => setSemForm({ ...semForm, endDate: e.target.value })}
-                            className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-850 dark:border-slate-750 dark:bg-[#18233C] dark:text-white outline-none focus:border-blue-500"
-                          />
-                        </div>
+                      
+                      <div className="overflow-auto flex-1">
+                        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                          <thead className="bg-slate-50 text-[10px] uppercase text-slate-500 dark:bg-[#0B1221] dark:text-slate-400 font-bold tracking-wider border-b border-slate-100 dark:border-slate-800 sticky top-0 z-10">
+                            <tr>
+                              <th className="px-4 py-3 whitespace-nowrap">Kode</th>
+                              <th className="px-4 py-3 whitespace-nowrap">Nama Semester</th>
+                              <th className="px-4 py-3 whitespace-nowrap">Tipe</th>
+                              <th className="px-4 py-3 whitespace-nowrap text-center">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                            {semestersCatalog && semestersCatalog.length > 0 ? (
+                              semestersCatalog.map((sem: any, idx: number) => (
+                                <tr key={sem.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                  <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">
+                                    {sem.code}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="font-bold text-slate-700 dark:text-slate-200">{sem.name}</div>
+                                    <div className="text-[10px] text-slate-500 font-medium mt-0.5 tracking-wider">{sem.academic_year}</div>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                      {sem.semester_type}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    {sem.is_active ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-500/20">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        Aktif
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                        Nonaktif
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={4} className="px-4 py-12 text-center">
+                                  <div className="flex flex-col items-center justify-center text-slate-400">
+                                    <Calendar className="h-8 w-8 mb-2 opacity-50" />
+                                    <p className="text-xs font-medium">Belum ada data periode akademik</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
-
-                      <div className="flex items-center gap-2 pt-1.5">
-                        <input
-                          type="checkbox"
-                          id="isActive"
-                          checked={semForm.isActive}
-                          onChange={(e) => setSemForm({ ...semForm, isActive: e.target.checked })}
-                          className="rounded border-slate-250 bg-slate-50 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label htmlFor="isActive" className="text-[10px] font-bold text-slate-600 dark:text-slate-350 cursor-pointer select-none">
-                          Aktifkan langsung
-                        </label>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={semSubmitting}
-                        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 py-2 px-4 text-xs font-black text-white shadow-sm transition-colors cursor-pointer disabled:opacity-50 mt-2"
-                      >
-                        {semSubmitting ? (
-                          <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Menyimpan...</>
-                        ) : (
-                          'Simpan Periode'
-                        )}
-                      </button>
-                    </form>
+                    </div>
                   </div>
                 </div>
               )}
