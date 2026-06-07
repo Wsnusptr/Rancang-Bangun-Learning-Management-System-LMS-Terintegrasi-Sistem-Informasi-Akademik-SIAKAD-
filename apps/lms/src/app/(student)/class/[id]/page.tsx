@@ -6,7 +6,7 @@ import ClassHeader from '@/components/classroom/ClassHeader'
 import ClassCalendar from '@/components/classroom/ClassCalendar'
 import { 
   Loader2, AlertCircle, FileText, Send, User, 
-  MessageSquare, Calendar, Pin, Download, Sparkles, Video, Clock, ChevronRight, HelpCircle, ChevronDown, ChevronUp
+  MessageSquare, Calendar, Pin, Download, Sparkles, Video, Clock, ChevronRight, HelpCircle, ChevronDown, ChevronUp, X
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
