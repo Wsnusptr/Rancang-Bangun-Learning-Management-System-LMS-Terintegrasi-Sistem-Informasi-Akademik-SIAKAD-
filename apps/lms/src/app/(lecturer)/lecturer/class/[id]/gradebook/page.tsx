@@ -9,8 +9,6 @@ import {
   Sparkles, Award, PlayCircle, Layers, XCircle, Users, Settings, X, Save
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
-import ClassSidebar from '@/components/classroom/ClassSidebar'
-import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -105,18 +103,9 @@ export default function LecturerGradebook({ params }: Params) {
   const [minAttendance, setMinAttendance] = useState(75)
   const [weightsSaveLoading, setWeightsSaveLoading] = useState(false)
 
-  // Bulk Edit State
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set())
   const [editValues, setEditValues] = useState<Record<string, any>>({})
   const [savingBulk, setSavingBulk] = useState(false)
-
-  // Zoom and Assignments states for Sidebar
-  const [zoomLink, setZoomLink] = useState('')
-  const [zoomInput, setZoomInput] = useState('')
-  const [isEditingZoom, setIsEditingZoom] = useState(false)
-  const [zoomError, setZoomError] = useState<string | null>(null)
-  const [realDescription, setRealDescription] = useState('')
-  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([])
 
   // Sync weights when loaded from API
   useEffect(() => {
@@ -284,94 +273,12 @@ export default function LecturerGradebook({ params }: Params) {
     }
   }
 
-  const loadAssignments = async () => {
-    try {
-      const res = await fetch(`/api/classes/${id}/assignments`)
-      const json = await res.json()
-      if (json.success && Array.isArray(json.data)) {
-        const upcoming = json.data.filter((a: any) => {
-          if (!a.due_date) return true
-          return new Date(a.due_date).getTime() > Date.now()
-        }).slice(0, 3)
-        setUpcomingAssignments(upcoming)
-      }
-    } catch (err) {}
-  }
-
-  const loadZoomLink = async () => {
-    const supabase = createClient()
-    try {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('description')
-        .eq('id', id)
-        .single()
-      if (data && data.description) {
-        if (data.description.includes('||ZOOM||')) {
-          const parts = data.description.split('||ZOOM||')
-          setZoomLink(parts[1]?.trim() || '')
-          setRealDescription(parts[0]?.trim() || '')
-        } else if (data.description.startsWith('http')) {
-          setZoomLink(data.description)
-          setRealDescription('')
-        } else {
-          setRealDescription(data.description)
-          setZoomLink('')
-        }
-      }
-    } catch (err) {}
-  }
-
-  const handleSaveZoomLink = async () => {
-    setZoomError(null)
-    if (zoomInput && !zoomInput.startsWith('http')) {
-      setZoomError('Link Zoom/Meet harus diawali dengan http:// atau https://')
-      return
-    }
-
-    const supabase = createClient()
-    const combinedDesc = `${realDescription}||ZOOM||${zoomInput}`
-
-    try {
-      const { error } = await supabase
-        .from('classes')
-        .update({ description: combinedDesc })
-        .eq('id', id)
-
-      if (error) throw error
-      setZoomLink(zoomInput)
-      setIsEditingZoom(false)
-    } catch (err) {
-      setZoomError('Gagal menyimpan link pertemuan')
-    }
-  }
-
-  const handleDeleteZoomLink = async () => {
-    if (!confirm('Apakah Anda yakin ingin menghapus link Zoom/Meet kelas ini?')) return
-    const supabase = createClient()
-
-    try {
-      const { error } = await supabase
-        .from('classes')
-        .update({ description: realDescription })
-        .eq('id', id)
-
-      if (error) throw error
-      setZoomLink('')
-      setZoomInput('')
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
   useEffect(() => {
     async function init() {
       setLoading(true)
       await Promise.all([
         loadClassDetail(), 
-        loadGradebook(),
-        loadAssignments(),
-        loadZoomLink()
+        loadGradebook()
       ])
       setLoading(false)
     }
@@ -504,43 +411,7 @@ export default function LecturerGradebook({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
-      <ClassMobileWidgets 
-        classId={id} 
-        role="lecturer" 
-        classCode={classDetail.class_code} 
-        enrolledCount={classDetail.enrolled_count} 
-        zoomLink={zoomLink} 
-        upcomingAssignments={upcomingAssignments} 
-        zoomProps={{
-          isEditingZoom,
-          setIsEditingZoom,
-          zoomInput,
-          setZoomInput,
-          handleSaveZoomLink,
-          handleDeleteZoomLink,
-          zoomError
-        }}
-      />
-
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
-        <ClassSidebar 
-          classId={id} 
-          role="lecturer" 
-          classCode={classDetail.class_code} 
-          enrolledCount={classDetail.enrolled_count} 
-          zoomLink={zoomLink} 
-          upcomingAssignments={upcomingAssignments}
-          zoomProps={{
-            isEditingZoom,
-            setIsEditingZoom,
-            zoomInput,
-            setZoomInput,
-            handleSaveZoomLink,
-            handleDeleteZoomLink,
-            zoomError
-          }}
-        />
-
+      <div className="max-w-7xl mx-auto px-1 md:px-3 space-y-6">
         <div className="lg:col-span-3 space-y-6">
           {/* Control Actions Row panel */}
       <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 items-start sm:items-center justify-between bg-white border border-slate-150 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl dark:bg-[#121B2E] dark:border-slate-800/80">

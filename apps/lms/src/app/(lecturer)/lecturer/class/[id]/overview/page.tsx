@@ -11,6 +11,8 @@ import {
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import ClassSidebar from '@/components/classroom/ClassSidebar'
+import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -61,12 +63,13 @@ export default function LecturerClassOverview({ params }: Params) {
   const [userId, setUserId] = useState<string | null>(null)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   
-  // Zoom State
+  // Zoom and Assignments State
   const [zoomLink, setZoomLink] = useState('')
   const [realDescription, setRealDescription] = useState('')
   const [isEditingZoom, setIsEditingZoom] = useState(false)
   const [zoomInput, setZoomInput] = useState('')
   const [zoomError, setZoomError] = useState<string | null>(null)
+  const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([])
 
   const loadData = async () => {
     setLoading(true)
@@ -188,6 +191,11 @@ export default function LecturerClassOverview({ params }: Params) {
             data: a
           })
         })
+        const upcoming = assignmentsRes.data.filter((a: any) => {
+          if (!a.due_date) return true
+          return new Date(a.due_date).getTime() > Date.now()
+        }).slice(0, 3)
+        setUpcomingAssignments(upcoming)
       }
 
       items.sort((a, b) => b.date.getTime() - a.date.getTime())
@@ -284,90 +292,44 @@ export default function LecturerClassOverview({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
+      <ClassMobileWidgets 
+        classId={id} 
+        role="lecturer" 
+        classCode={classDetail.class_code} 
+        enrolledCount={classDetail.enrolled_count} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+        zoomProps={{
+          isEditingZoom,
+          setIsEditingZoom,
+          zoomInput,
+          setZoomInput,
+          handleSaveZoomLink,
+          handleDeleteZoomLink,
+          zoomError
+        }}
+      />
+
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
         {/* Left Sidebar */}
-        <div className="space-y-5 lg:col-span-1">
-           {/* Real Google Meet/Zoom card with Editable functionality - hidden on mobile, use FAB instead */}
-           <div className="hidden lg:block rounded-2xl border border-slate-150 bg-white p-5 dark:border-slate-800/80 dark:bg-[#121B2E]/90">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-800 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                <Video className="h-4 w-4 text-primary dark:text-blue-500" />
-                Pertemuan Online
-              </span>
-            </div>
-            
-            <div className="mt-3.5">
-              {isEditingZoom ? (
-                  <div className="space-y-2">
-                      <input
-                          type="url"
-                          value={zoomInput}
-                          onChange={(e) => setZoomInput(e.target.value)}
-                          placeholder="https://zoom.us/j/..."
-                          className="w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[10px] outline-none focus:border-blue-600 dark:border-slate-800 dark:bg-[#18233C] dark:text-white"
-                      />
-                      {zoomError && <p className="text-[9px] text-red-500 font-bold">{zoomError}</p>}
-                      <div className="flex gap-2">
-                          <button
-                              onClick={() => setIsEditingZoom(false)}
-                              className="flex-1 rounded border border-slate-200 py-1 text-[9px] font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
-                          >
-                              Batal
-                          </button>
-                          <button
-                              onClick={handleSaveZoomLink}
-                              className="flex-1 rounded bg-blue-600 py-1 text-[9px] font-bold text-white hover:bg-blue-700"
-                          >
-                              Simpan
-                          </button>
-                      </div>
-                  </div>
-              ) : zoomLink ? (
-                <div className="space-y-2">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">Status: Kelas Aktif</p>
-                  <a
-                    href={zoomLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full mt-2.5 flex items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 py-2.5 text-[10px] font-black uppercase tracking-wider text-primary transition-all cursor-pointer dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-400"
-                  >
-                    Gabung Ruangan
-                  </a>
-                  <div className="flex gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                        onClick={() => {
-                            setZoomInput(zoomLink)
-                            setIsEditingZoom(true)
-                        }}
-                        className="flex-1 text-[9px] font-bold text-slate-500 hover:text-blue-600"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={handleDeleteZoomLink}
-                        className="flex-1 text-[9px] font-bold text-slate-500 hover:text-red-600"
-                    >
-                        Hapus
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-2.5 space-y-1.5">
-                  <div className="flex items-center justify-center gap-1 text-[11px] text-slate-500 font-extrabold dark:text-gray-400">
-                    <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    Belum Ada Jadwal
-                  </div>
-                  <button
-                      onClick={() => setIsEditingZoom(true)}
-                      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full bg-blue-600 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700 transition-colors"
-                  >
-                      <Plus className="h-3 w-3" /> Buat Pertemuan
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ClassSidebar 
+          classId={id} 
+          role="lecturer" 
+          classCode={classDetail.class_code} 
+          enrolledCount={classDetail.enrolled_count} 
+          zoomLink={zoomLink} 
+          upcomingAssignments={upcomingAssignments}
+          zoomProps={{
+            isEditingZoom,
+            setIsEditingZoom,
+            zoomInput,
+            setZoomInput,
+            handleSaveZoomLink,
+            handleDeleteZoomLink,
+            zoomError
+          }}
+        />
+
 
         {/* Right Content - Unified Feed */}
         <div className="lg:col-span-3 space-y-4">
@@ -533,29 +495,6 @@ export default function LecturerClassOverview({ params }: Params) {
           )}
         </div>
       </div>
-
-      {/* Mobile Floating Zoom Button (only shown when zoom link exists) */}
-      {zoomLink && (
-        <a
-          href={zoomLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lg:hidden fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-[10px] font-black text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95"
-        >
-          <Video className="h-3.5 w-3.5" />
-          Gabung Zoom
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      )}
-      {!zoomLink && (
-        <button
-          onClick={() => setIsEditingZoom(true)}
-          className="lg:hidden fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-slate-700 hover:bg-slate-800 px-4 py-2.5 text-[10px] font-black text-white shadow-lg transition-all active:scale-95"
-        >
-          <Video className="h-3.5 w-3.5" />
-          Buat Zoom
-        </button>
-      )}
     </div>
   )
 }

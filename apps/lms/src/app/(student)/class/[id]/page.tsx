@@ -276,6 +276,15 @@ export default function StudentClassStream({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
+      <ClassMobileWidgets 
+        classId={id} 
+        role="student" 
+        classCode={classDetail.class_code} 
+        enrolledCount={classDetail.enrolled_count} 
+        zoomLink={zoomLink} 
+        upcomingAssignments={upcomingAssignments} 
+      />
+
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-4 max-w-7xl mx-auto px-1 md:px-3">
         <ClassSidebar 
           classId={id} 
