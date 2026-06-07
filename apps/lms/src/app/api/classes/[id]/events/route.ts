@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth'
 
 export async function GET(
   request: NextRequest,
@@ -46,29 +47,32 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Get authenticated user from session
+    const { user, response: authErr } = await requireAuth()
+    if (authErr) return authErr
+
     const { id } = await params
     const body = await request.json()
 
-    // Needs auth check in real app, but omitting for simplicity in this implementation
     const admin = createAdminClient()
     
-    // First we check if table exists by doing a dummy select
+    // First check if table exists
     const checkTable = await admin.from('class_events').select('id').limit(1)
     
     if (checkTable.error && checkTable.error.code === '42P01') {
       return NextResponse.json(
-        { success: false, error: 'Database table for events is not setup yet. Run setup_calendar.js' }, 
+        { success: false, error: 'Database table for events is not setup yet.' }, 
         { status: 500 }
       )
     }
 
     const { data, error } = await admin.from('class_events').insert({
       class_id: id,
-      created_by: body.created_by || 'b89e6cb7-f203-45f8-80f2-5100a74794db', // Fallback to Wisnu for mock
+      created_by: user.id, // Use actual authenticated user ID - no more hardcoded UUID!
       title: body.title,
-      description: body.description,
+      description: body.description || null,
       event_date: body.event_date,
-      event_time: body.event_time,
+      event_time: body.event_time || null,
       event_type: body.event_type || 'reminder'
     }).select().single()
 

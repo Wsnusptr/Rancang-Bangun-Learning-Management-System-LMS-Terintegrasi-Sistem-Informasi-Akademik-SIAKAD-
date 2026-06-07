@@ -123,9 +123,19 @@ export default function ClassHeader({
           overlayClassName="bg-gradient-to-t from-black/85 via-black/45 to-transparent"
         />
 
-        {bannerAction && (
-          <div className="relative z-30 mb-3 flex justify-end">{bannerAction}</div>
-        )}
+        <div className="relative z-30 mb-3 flex justify-end items-center gap-2">
+          {/* Student Leave/Info button - top right of banner on mobile */}
+          {role === 'student' && (
+            <button
+              onClick={() => setShowLeaveModal(true)}
+              title="Info Kelas / Keluar"
+              className="flex items-center justify-center rounded-full p-1.5 bg-white/15 backdrop-blur-md border border-white/20 text-white hover:bg-white/25 transition-colors shadow-sm"
+            >
+              <Info className="h-4 w-4" />
+            </button>
+          )}
+          {bannerAction && <div>{bannerAction}</div>}
+        </div>
 
         <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1 space-y-1.5 pr-0 md:pr-4">
@@ -235,37 +245,53 @@ export default function ClassHeader({
         </div>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-slate-100 bg-slate-50/80 p-1.5 dark:border-slate-800 dark:bg-[#151F32]/50 items-center justify-between">
-        <div className="flex gap-1">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            const isActive = pathname === tab.href
-            return (
+      <div className="flex border-b border-slate-100 bg-slate-50/80 dark:border-slate-800 dark:bg-[#151F32]/50 items-center">
+        {/* Scrollable tabs on the left */}
+        <div className="flex gap-1 overflow-x-auto p-1.5 flex-1 min-w-0">
+          {tabs
+            .filter(tab => tab.label !== 'Pengaturan')
+            .map((tab) => {
+              const Icon = tab.icon
+              const isActive = pathname === tab.href
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-[10px] font-medium transition-colors ${
+                    isActive
+                      ? 'bg-white text-blue-700 shadow-sm dark:bg-[#1C2842] dark:text-white'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </Link>
+              )
+            })}
+        </div>
+
+        {/* Pengaturan tab always pinned to far right for lecturer */}
+        {role === 'lecturer' && (() => {
+          const settingsTab = tabs.find(t => t.label === 'Pengaturan')
+          if (!settingsTab) return null
+          const Icon = settingsTab.icon
+          const isActive = pathname === settingsTab.href
+          return (
+            <div className="shrink-0 p-1.5 pl-0 border-l border-slate-100 dark:border-slate-800 ml-1">
               <Link
-                key={tab.href}
-                href={tab.href}
-                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-[10px] font-medium transition-colors ${
+                href={settingsTab.href}
+                className={`flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[10px] font-medium transition-colors ${
                   isActive
                     ? 'bg-white text-blue-700 shadow-sm dark:bg-[#1C2842] dark:text-white'
                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'
-                } ${tab.label === 'Pengaturan' ? 'ml-auto' : ''}`}
+                }`}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {tab.label}
+                {settingsTab.label}
               </Link>
-            )
-          })}
-        </div>
-
-        {role === 'student' && (
-          <button
-            onClick={() => setShowLeaveModal(true)}
-            title="Info Kelas / Keluar"
-            className="flex shrink-0 items-center justify-center rounded-lg p-2 text-slate-400 hover:bg-white hover:text-red-500 dark:hover:bg-[#1C2842] transition-colors ml-2 mr-1"
-          >
-            <Info className="h-4 w-4" />
-          </button>
-        )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* MODAL KELUAR KELAS (STUDENT ONLY) */}

@@ -77,6 +77,7 @@ interface ClassDetail {
   end_time: string | null
   enrolled_count: number
   lecturer_name: string
+  lecturer_id: string // Needed to check if current user is main lecturer or backup
 }
 
 export default function LecturerGradebook({ params }: Params) {
@@ -85,6 +86,8 @@ export default function LecturerGradebook({ params }: Params) {
   const [students, setStudents] = useState<StudentEnrollment[]>([])
   const [weights, setWeights] = useState<ClassWeights | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isBackupLecturer, setIsBackupLecturer] = useState(false)
   
   // Loading action indicators
   const [syncLoading, setSyncLoading] = useState(false)
@@ -238,6 +241,10 @@ export default function LecturerGradebook({ params }: Params) {
   const loadClassDetail = async () => {
     const supabase = createClient()
     try {
+      // Get current user to check if they are main lecturer or backup
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setCurrentUserId(user.id)
+
       const { data, error } = await supabase
         .from('class_details')
         .select('*')
@@ -255,6 +262,11 @@ export default function LecturerGradebook({ params }: Params) {
         console.error('Failed to fetch stats', err)
       }
       setClassDetail(data)
+
+      // Check if current user is backup (not the main lecturer)
+      if (user && data.lecturer_id && data.lecturer_id !== user.id) {
+        setIsBackupLecturer(true)
+      }
     } catch (err) {
       console.error('[Gradebook] Class detail load failed:', err)
     }
@@ -379,6 +391,52 @@ export default function LecturerGradebook({ params }: Params) {
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
         <h3 className="text-lg font-black text-slate-800 dark:text-white">Kelas Tidak Ditemukan</h3>
         <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Kelas yang Anda cari tidak ada atau Anda tidak memiliki akses.</p>
+      </div>
+    )
+  }
+
+  // Block backup lecturers from accessing gradebook
+  if (isBackupLecturer) {
+    return (
+      <div className="space-y-8 select-none">
+        <ClassHeader
+          id={classDetail.id}
+          role="lecturer"
+          className={classDetail.class_name}
+          classCode={classDetail.class_code}
+          classSection={classDetail.class_section}
+          coverColor={classDetail.cover_color}
+          coverImageUrl={classDetail.cover_image_url}
+          lecturerName={classDetail.lecturer_name}
+          lecturerAvatar={classDetail.lecturer_avatar}
+          backupLecturerName={classDetail.backup_lecturer_name}
+          backupLecturerAvatar={classDetail.backup_lecturer_avatar}
+          courseCode={classDetail.course_code}
+          courseName={classDetail.course_name}
+          credits={classDetail.course_credits}
+          semesterName={classDetail.semester_name}
+          roomCode={classDetail.room_code}
+          roomName={classDetail.room_name}
+          dayOfWeek={classDetail.day_of_week}
+          startTime={classDetail.start_time}
+          endTime={classDetail.end_time}
+          enrolledCount={classDetail.enrolled_count}
+        />
+        <div className="max-w-7xl mx-auto px-3">
+          <div className="flex flex-col items-center justify-center py-16 text-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-[#121B2E]">
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-2xl mb-4">
+              <AlertCircle className="h-10 w-10 text-red-500" />
+            </div>
+            <h3 className="text-base font-black text-slate-800 dark:text-white mb-2">Akses Dibatasi</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">
+              Sebagai <strong>Dosen Pengganti</strong>, Anda tidak memiliki akses ke halaman Nilai.
+              Halaman ini hanya dapat diakses oleh dosen utama kelas.
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
+              Anda masih dapat mengakses: Stream, Materi, Tugas, Absensi, dan membuat event kelas.
+            </p>
+          </div>
+        </div>
       </div>
     )
   }

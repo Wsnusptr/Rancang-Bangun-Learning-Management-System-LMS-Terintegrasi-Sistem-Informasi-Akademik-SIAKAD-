@@ -166,6 +166,16 @@ export default function LoginClient() {
             }
 
             if (data.user) {
+                // --- Check for backup lecturer expiry ---
+                const meta = data.user.user_metadata
+                if (meta?.is_backup_lecturer && meta?.expires_at) {
+                    const expiresAt = new Date(meta.expires_at)
+                    if (expiresAt < new Date()) {
+                        await supabase.auth.signOut()
+                        throw new Error('Sesi dosen pengganti telah berakhir. Akun ini tidak lagi aktif. Hubungi dosen pengampu kelas.')
+                    }
+                }
+
                 // Fetch role
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
@@ -195,6 +205,7 @@ export default function LoginClient() {
                 // that causes "This page couldn't load" flicker on first login
                 window.location.href = safeRedirect
             }
+
         } catch (err: any) {
             setError(err.message || 'Terjadi kesalahan sistem')
             setLoading(false)
