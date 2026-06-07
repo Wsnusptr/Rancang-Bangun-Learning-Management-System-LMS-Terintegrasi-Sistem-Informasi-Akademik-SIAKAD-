@@ -3426,6 +3426,7 @@ export default function SiakadClientDashboard({
                     onChange={(e) => setClassForm({ ...classForm, dayOfWeek: e.target.value })}
                     className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-850 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-700 dark:bg-[#18233C] dark:text-white"
                   >
+                    <option value="">-- Pilih Hari --</option>
                     <option value="Senin">Senin</option>
                     <option value="Selasa">Selasa</option>
                     <option value="Rabu">Rabu</option>
