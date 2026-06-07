@@ -183,7 +183,7 @@ export default function PmbChatPage() {
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-[10px] md:text-xs font-bold text-slate-500 ml-2">Asisten sedang mengetik...</span>
+                <span className="text-[10px] md:text-xs font-bold text-slate-500 ml-2">Asisten sedang berfikir...</span>
               </div>
             </div>
           </div>
