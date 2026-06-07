@@ -76,17 +76,33 @@ export default function PmbChatPage() {
       })
 
       const json = await res.json()
+      
+      setIsLoading(false)
 
       if (json.success) {
-        setMessages(prev => [...prev, { role: 'ai', content: json.data.text }])
+        const fullText = json.data.text
+        setMessages(prev => [...prev, { role: 'ai', content: '' }])
+        
+        let i = 0
+        const interval = setInterval(() => {
+          i += 2 // characters per tick
+          const currentText = fullText.slice(0, i)
+          setMessages(prev => {
+            const newM = [...prev]
+            newM[newM.length - 1] = { ...newM[newM.length - 1], content: currentText }
+            return newM
+          })
+          if (i >= fullText.length) {
+            clearInterval(interval)
+          }
+        }, 15) // tick interval
       } else {
         setMessages(prev => [...prev, { role: 'ai', content: 'Maaf, terjadi kesalahan: ' + json.error }])
       }
     } catch (err) {
       console.error('Chat error:', err)
-      setMessages(prev => [...prev, { role: 'ai', content: 'Maaf, saya tidak dapat terhubung ke server saat ini. Silakan coba beberapa saat lagi.' }])
-    } finally {
       setIsLoading(false)
+      setMessages(prev => [...prev, { role: 'ai', content: 'Maaf, saya tidak dapat terhubung ke server saat ini. Silakan coba beberapa saat lagi.' }])
     }
   }
 
