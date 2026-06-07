@@ -57,41 +57,70 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. If userId is provided, update the LMS profiles record & perform auto-enrollment
-    if (userId) {
-      const newEmail = `${nim}@stmik.jayakarta.ac.id`
+    // 2. Ensure User exists in Auth and Profile is updated/created
+    let finalUserId = userId
+
+    if (!finalUserId) {
+      // If no userId provided (manual PMB without login), try to find them by email in Auth
+      if (email) {
+        const { data: searchUsers } = await supabase.auth.admin.listUsers()
+        const existingAuth = searchUsers?.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
+        if (existingAuth) finalUserId = existingAuth.id
+      }
+    }
+
+    const newEmail = `${nim}@stmik.jayakarta.ac.id`
+
+    if (finalUserId) {
+      // User exists in auth, update their email and password
+      const { error: authError } = await supabase.auth.admin.updateUserById(finalUserId, {
+        email: newEmail,
+        password: nim,
+        email_confirm: true
+      })
+      if (authError) {
+        console.error('[SIAKAD Verify PMB] Failed to update auth email:', authError)
+      }
+    } else {
+      // User does not exist in auth (manual PMB only), CREATE auth user
+      const { data: authData, error: createError } = await supabase.auth.admin.createUser({
+        email: newEmail,
+        password: nim,
+        email_confirm: true,
+        user_metadata: { full_name: fullName, role: 'student' }
+      })
+      if (createError) {
+        console.error('[SIAKAD Verify PMB] Failed to create auth user:', createError)
+      } else if (authData.user) {
+        finalUserId = authData.user.id
+      }
+    }
+
+    // Upsert the profile to guarantee the student has an LMS profile
+    if (finalUserId) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: finalUserId,
           nim: nim,
           name: fullName,
-          phone: phone,
-          address: address,
+          phone: phone || null,
+          address: address || null,
           email: newEmail,
           study_program_id: programId,
           role: 'student',
           enrollment_year: new Date().getFullYear(),
           is_active: true,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+        }, { onConflict: 'id' })
 
       if (profileError) {
-        console.error('[SIAKAD Verify PMB] Failed to update LMS profile:', profileError)
-      } else {
-        // Automatically update login email to NIM-based email
-        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
-          email: newEmail,
-          password: nim,
-          email_confirm: true
-        })
-        if (authError) {
-          console.error('[SIAKAD Verify PMB] Failed to update auth email:', authError)
-        }
+        console.error('[SIAKAD Verify PMB] Failed to upsert LMS profile:', profileError)
       }
+    }
 
-      // --- AUTOMATION: Automatically enroll student in active classes of their study program ---
-      if (programId) {
+    // --- AUTOMATION: Automatically enroll student in active classes of their study program ---
+    if (programId && finalUserId) {
         try {
           // 1. Dapatkan semester yang sedang aktif saat ini
           const { data: activeSemester } = await supabase
@@ -112,7 +141,7 @@ export async function POST(request: NextRequest) {
 
           if (activeClasses && activeClasses.length > 0) {
             const enrollmentInserts = activeClasses.map(cls => ({
-              student_id: userId,
+              student_id: finalUserId,
               class_id: cls.id,
               status: 'active'
             }))
@@ -133,7 +162,7 @@ export async function POST(request: NextRequest) {
           console.error('[SIAKAD Verify PMB] Automated enrollment failed:', enrollErr)
         }
       }
-    }
+    // No extra brace
 
     // 3. Upsert into SIAKAD students reference table
     const { error: studentError } = await supabase
@@ -156,6 +185,7 @@ export async function POST(request: NextRequest) {
       const { error: mbError } = await supabase
         .from('mahasiswa_baru')
         .update({
+          email: newEmail,
           status: 'enrolled',
           assigned_nim: nim,
           updated_at: new Date().toISOString()

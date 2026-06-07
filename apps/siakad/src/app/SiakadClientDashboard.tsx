@@ -192,7 +192,7 @@ export default function SiakadClientDashboard({
     dateOfBirth: '',
     gender: '',
     address: '',
-    password: 'DosenJayakarta2026!'
+    password: ''
   })
   const [dosenError, setDosenError] = useState<string | null>(null)
   const [dosenSuccess, setDosenSuccess] = useState<string | null>(null)

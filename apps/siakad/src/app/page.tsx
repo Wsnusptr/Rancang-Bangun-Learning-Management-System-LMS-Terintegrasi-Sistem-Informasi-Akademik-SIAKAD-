@@ -147,12 +147,15 @@ export default async function SiakadDashboard() {
             phone: m.phone || '',
             role: 'student',
             enrollment_year: m.enrollment_year || new Date().getFullYear(),
-            is_active: true
+            is_active: true,
+            study_program_code: m.intended_program,
+            intended_program: m.intended_program
           })
         }
       } else {
         const mEmail = m.email?.toLowerCase()
-        if (mEmail && !emails.has(mEmail)) {
+        const isInStudents = students.some(s => s.email?.toLowerCase() === mEmail || s.email?.toLowerCase() === `${m.assigned_nim}@stmik.jayakarta.ac.id`)
+        if (mEmail && !emails.has(mEmail) && !isInStudents) {
           emails.add(mEmail)
           combined.push({
             id: m.id,
