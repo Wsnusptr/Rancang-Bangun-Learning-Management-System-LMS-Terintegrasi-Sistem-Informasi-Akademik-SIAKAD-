@@ -28,6 +28,18 @@ export default function LecturerSettingsPage({ params }: Params) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  // Edit Class Information State
+  const [rooms, setRooms] = useState<any[]>([])
+  const [editClassName, setEditClassName] = useState('')
+  const [editRoomId, setEditRoomId] = useState('')
+  const [editDayOfWeek, setEditDayOfWeek] = useState('')
+  const [editStartTime, setEditStartTime] = useState('')
+  const [editEndTime, setEditEndTime] = useState('')
+  const [editCoverColor, setEditCoverColor] = useState('')
+  const [savingInfo, setSavingInfo] = useState(false)
+  const [infoError, setInfoError] = useState<string | null>(null)
+  const [infoSuccess, setInfoSuccess] = useState<string | null>(null)
+
   // Backup Lecturer State
   const [lecturers, setLecturers] = useState<any[]>([])
   const [backupLecturerId, setBackupLecturerId] = useState<string>('')
@@ -48,10 +60,11 @@ export default function LecturerSettingsPage({ params }: Params) {
       const supabase = createClient()
       
       // Parallel requests to load class details, backup info, and all lecturers
-      const [detailsRes, backupRes, lecturersRes] = await Promise.all([
+      const [detailsRes, backupRes, lecturersRes, roomsRes] = await Promise.all([
         supabase.from('class_details').select('*').eq('id', id).single(),
         supabase.from('classes').select('backup_lecturer_id').eq('id', id).single(),
-        fetch('/api/academic/lecturers').then(res => res.json())
+        fetch('/api/academic/lecturers').then(res => res.json()),
+        fetch('/api/academic/rooms').then(res => res.json())
       ])
       
       if (detailsRes.data) {
@@ -71,6 +84,12 @@ export default function LecturerSettingsPage({ params }: Params) {
         setWeightQuiz(detailsRes.data.weight_quiz || 0)
         setWeightMidterm(detailsRes.data.weight_midterm || 0)
         setWeightFinal(detailsRes.data.weight_final || 0)
+        
+        setEditClassName(detailsRes.data.class_name || '')
+        setEditDayOfWeek(detailsRes.data.day_of_week || '')
+        setEditStartTime(detailsRes.data.start_time?.substring(0, 5) || '')
+        setEditEndTime(detailsRes.data.end_time?.substring(0, 5) || '')
+        setEditCoverColor(detailsRes.data.cover_color || '#1A3A6B')
       }
       if (detailsRes.error) throw detailsRes.error
 
@@ -80,6 +99,10 @@ export default function LecturerSettingsPage({ params }: Params) {
 
       if (lecturersRes.success) {
         setLecturers(lecturersRes.data || [])
+      }
+
+      if (roomsRes.success) {
+        setRooms(roomsRes.data || [])
       }
 
       // Load Zoom Link & Upcoming Assignments
@@ -98,10 +121,12 @@ export default function LecturerSettingsPage({ params }: Params) {
       try {
         const { data: classData } = await supabase
           .from('classes')
-          .select('description')
+          .select('description, room_id')
           .eq('id', id)
           .single()
-        if (classData && classData.description) {
+        if (classData) {
+          setEditRoomId(classData.room_id || '')
+          if (classData.description) {
           if (classData.description.includes('||ZOOM||')) {
             const parts = classData.description.split('||ZOOM||')
             setZoomLink(parts[1]?.trim() || '')
@@ -113,6 +138,7 @@ export default function LecturerSettingsPage({ params }: Params) {
             setRealDescription(classData.description)
             setZoomLink('')
           }
+        }
         }
       } catch (err) {}
 
@@ -203,6 +229,34 @@ export default function LecturerSettingsPage({ params }: Params) {
        setError(err.message || 'Gagal menyimpan pengaturan')
     } finally {
        setSaving(false)
+    }
+  }
+
+  const handleSaveInfo = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingInfo(true)
+    setInfoError(null)
+    setInfoSuccess(null)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('classes').update({
+         class_name: editClassName,
+         room_id: editRoomId || null,
+         day_of_week: editDayOfWeek || null,
+         start_time: editStartTime ? editStartTime + ':00' : null,
+         end_time: editEndTime ? editEndTime + ':00' : null,
+         cover_color: editCoverColor
+      }).eq('id', id)
+
+      if (error) throw error
+      
+      setInfoSuccess('Informasi kelas berhasil diperbarui! Halaman akan dimuat ulang...')
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (err: any) {
+       setInfoError(err.message || 'Gagal menyimpan informasi kelas')
+    } finally {
+       setSavingInfo(false)
     }
   }
 
@@ -300,14 +354,103 @@ export default function LecturerSettingsPage({ params }: Params) {
           }}
         />
 
-        <div className="lg:col-span-3 space-y-6">
+         <div className="lg:col-span-3 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 sm:mb-6">
             <h2 className="text-[11px] sm:text-[13px] font-black uppercase text-slate-800 dark:text-white tracking-widest flex items-center gap-2">
                <Settings2 className="h-4 w-4 text-blue-600" /> Pengaturan Kelas
             </h2>
          </div>
 
+         {/* Edit Informasi Kelas */}
          <div className="bg-white border border-slate-200 rounded-xl shadow-sm dark:bg-[#121B2E] dark:border-slate-800">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800/50">
+               <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                     <Settings2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                     <h3 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-wide">Informasi & Jadwal Kelas</h3>
+                     <p className="text-[11px] font-medium text-slate-500 mt-1">Ubah nama, jadwal hari, jam, ruang perkuliahan, dan tema kelas.</p>
+                  </div>
+               </div>
+            </div>
+
+            <div className="p-3 sm:p-6 bg-slate-50/50 dark:bg-[#0D1424]/30">
+               {infoError && (
+                  <div className="mb-5 flex items-start gap-2.5 bg-red-50 text-red-700 p-3.5 rounded-lg border border-red-200/50 text-[11px] font-bold dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-400">
+                     <AlertCircle className="h-4 w-4 shrink-0" /> {infoError}
+                  </div>
+               )}
+               {infoSuccess && (
+                  <div className="mb-5 flex items-start gap-2.5 bg-emerald-50 text-emerald-700 p-3.5 rounded-lg border border-emerald-200/50 text-[11px] font-bold dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400">
+                     <CheckCircle2 className="h-4 w-4 shrink-0" /> {infoSuccess}
+                  </div>
+               )}
+
+               <form onSubmit={handleSaveInfo} className="space-y-4 sm:space-y-6">
+                  <div>
+                     <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Nama Kelas</label>
+                     <input type="text" required value={editClassName} onChange={(e) => setEditClassName(e.target.value)} className="w-full text-xs sm:text-sm font-bold text-slate-800 border border-slate-200 rounded-lg p-2.5 sm:p-3 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all dark:bg-[#18233C] dark:border-slate-700 dark:text-white" />
+                  </div>
+
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                     <div>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Hari</label>
+                        <select value={editDayOfWeek} onChange={(e) => setEditDayOfWeek(e.target.value)} className="w-full text-xs sm:text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 sm:p-3 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all dark:bg-[#18233C] dark:border-slate-700 dark:text-white">
+                           <option value="">-- Pilih Hari --</option>
+                           <option value="Senin">Senin</option>
+                           <option value="Selasa">Selasa</option>
+                           <option value="Rabu">Rabu</option>
+                           <option value="Kamis">Kamis</option>
+                           <option value="Jumat">Jumat</option>
+                           <option value="Sabtu">Sabtu</option>
+                        </select>
+                     </div>
+                     <div>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Jam Mulai</label>
+                        <input type="time" value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} className="w-full text-xs sm:text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 sm:p-3 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all dark:bg-[#18233C] dark:border-slate-700 dark:text-white" />
+                     </div>
+                     <div>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Jam Selesai</label>
+                        <input type="time" value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} className="w-full text-xs sm:text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 sm:p-3 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all dark:bg-[#18233C] dark:border-slate-700 dark:text-white" />
+                     </div>
+                     <div>
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Ruang Kuliah</label>
+                        <select value={editRoomId} onChange={(e) => setEditRoomId(e.target.value)} className="w-full text-xs sm:text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 sm:p-3 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all dark:bg-[#18233C] dark:border-slate-700 dark:text-white">
+                           <option value="">-- Pilih Ruang --</option>
+                           {rooms.map(r => (
+                              <option key={r.id} value={r.id}>{r.code} - {r.name}</option>
+                           ))}
+                        </select>
+                     </div>
+                  </div>
+
+                  <div>
+                     <label className="text-[9px] sm:text-[10px] font-black uppercase text-slate-500 block mb-1.5 sm:mb-2">Warna Tema Kelas</label>
+                     <div className="flex gap-3 mt-1.5">
+                        {['#1A3A6B', '#8B1A1A', '#0F766E', '#4D7C0F', '#6D28D9', '#B45309'].map((c) => (
+                           <button
+                              key={c}
+                              type="button"
+                              onClick={() => setEditCoverColor(c)}
+                              className={`h-8 w-8 rounded-lg cursor-pointer transition-all ${editCoverColor === c ? 'ring-4 ring-offset-2 ring-blue-500 scale-110' : ''}`}
+                              style={{ backgroundColor: c }}
+                           />
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 dark:border-slate-700/50 pt-5 flex justify-end">
+                     <button type="submit" disabled={savingInfo} className="flex items-center justify-center w-auto gap-1.5 py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 shadow-sm shadow-blue-600/20 active:scale-[0.98]">
+                        {savingInfo ? <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" /> : <Save className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
+                        {savingInfo ? 'Menyimpan...' : 'Simpan Informasi'}
+                     </button>
+                  </div>
+               </form>
+            </div>
+         </div>
+
+         <div className="bg-white border border-slate-200 rounded-xl shadow-sm dark:bg-[#121B2E] dark:border-slate-800 mt-6">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800/50">
                <div className="flex items-start gap-3">
                   <div className="p-2 bg-amber-50 rounded-lg text-amber-500 dark:bg-amber-900/20">

@@ -174,13 +174,13 @@ export default function AssignmentCard({
         className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#152033] transition-colors"
       >
         <div className="flex items-center gap-3">
-          {lecturerAvatar ? (
-            <img src={lecturerAvatar} alt={lecturerName} className="h-10 w-10 shrink-0 rounded-full object-cover border border-slate-200 dark:border-slate-700" />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-              <FileText className="h-5 w-5" />
-            </div>
-          )}
+          <div className="relative h-10 w-10 shrink-0">
+            <img 
+              src={lecturerAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(lecturerName || 'Dosen')}&background=random`} 
+              alt={lecturerName || 'Dosen'} 
+              className="h-full w-full shrink-0 rounded-full object-cover border border-slate-200 dark:border-slate-700" 
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-[10px] md:text-[11px] font-extrabold text-slate-850 dark:text-white leading-tight">
               {lecturerName} <span className="font-semibold text-slate-500 dark:text-slate-400">memposting tugas baru:</span> {assign.title}

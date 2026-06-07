@@ -258,13 +258,13 @@ export default function StudentClassOverview({ params }: Params) {
                       className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#152033] transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        {post.profiles?.avatar_url || classDetail.lecturer_avatar ? (
-                          <img src={post.profiles?.avatar_url || classDetail.lecturer_avatar} alt={post.profiles?.name || 'Dosen'} className="h-10 w-10 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-700" />
-                        ) : (
-                          <div className="flex h-10 w-10 rounded-full bg-slate-100 items-center justify-center text-slate-600 dark:bg-slate-800 dark:text-slate-300 shrink-0">
-                            <MessageSquare className="h-5 w-5" />
-                          </div>
-                        )}
+                        <div className="relative h-10 w-10 shrink-0">
+                          <img 
+                            src={post.profiles?.avatar_url || classDetail.lecturer_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.profiles?.name || classDetail.lecturer_name || 'Dosen')}&background=random`} 
+                            alt={post.profiles?.name || classDetail.lecturer_name || 'Dosen'} 
+                            className="h-full w-full rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-700" 
+                          />
+                        </div>
                         <div>
                           <h3 className="text-[10px] md:text-[11px] font-extrabold text-slate-800 dark:text-white leading-tight">
                             {post.profiles?.name || 'Dosen'} <span className="font-semibold text-slate-500 dark:text-slate-400">memposting {post.title ? 'materi baru:' : 'pengumuman baru'}</span> {post.title || ''}
