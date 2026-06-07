@@ -69,7 +69,7 @@ export default function ClassRoomCard({
       href={href}
       className="group block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:shadow-lg dark:border-slate-800 dark:bg-[#121B2E]"
     >
-      <div className="relative h-[9rem] px-5 pt-5 pb-8">
+      <div className="relative min-h-[10.5rem] px-5 pt-5 pb-10">
         <div className="absolute inset-0 overflow-hidden">
           <ClassCoverBackground
             coverColor={coverColor}
@@ -82,14 +82,14 @@ export default function ClassRoomCard({
 
         <div className="relative z-40 flex h-full flex-col justify-start gap-1.5">
           <h3 
-            className="line-clamp-3 text-[14px] font-bold leading-snug text-white group-hover:underline decoration-white/30 underline-offset-4 pr-12"
+            className="line-clamp-2 text-[14px] md:text-[15px] font-bold leading-snug text-white group-hover:underline decoration-white/30 underline-offset-4 pr-16"
             style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
           >
             {className}
             {isBackup && <span className="ml-1.5 inline-block rounded bg-amber-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase text-white shadow-sm ring-1 ring-white/20 align-middle -mt-0.5">BACKUP</span>}
           </h3>
           
-          <div className="flex flex-col gap-0.5 pb-0 pr-14">
+          <div className="flex flex-col gap-0.5 pb-0 pr-16">
             <p className="line-clamp-1 text-[11px] font-semibold text-white/95 drop-shadow-sm">
               {lecturerName}
             </p>
@@ -108,9 +108,9 @@ export default function ClassRoomCard({
           <ProfileAvatar
             src={lecturerAvatar}
             name={lecturerName}
-            size="lg"
-            borderClassName="border-[4px] border-white dark:border-[#121B2E]"
-            className="shadow-2xl scale-125 transition-transform group-hover:scale-[1.3]"
+            size="md"
+            borderClassName="border-[3px] border-white dark:border-[#121B2E]"
+            className="shadow-xl transition-transform group-hover:scale-110"
           />
         </div>
       </div>
