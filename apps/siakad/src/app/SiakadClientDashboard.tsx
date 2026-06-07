@@ -307,6 +307,13 @@ export default function SiakadClientDashboard({
       }
 
       setSemSuccess(json.message)
+      if (json.data) {
+        if (json.data.is_active) {
+          setLocalSemesters([json.data, ...localSemesters.map(s => ({...s, is_active: false}))])
+        } else {
+          setLocalSemesters([json.data, ...localSemesters])
+        }
+      }
       setSemForm({
         code: '',
         name: '',
@@ -2279,7 +2286,7 @@ export default function SiakadClientDashboard({
                           Daftar Periode Akademik
                         </h3>
                         <span className="inline-flex items-center justify-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                          {semestersCatalog?.length || 0} Periode
+                          {localSemesters?.length || 0} Periode
                         </span>
                       </div>
                       
@@ -2294,8 +2301,8 @@ export default function SiakadClientDashboard({
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                            {semestersCatalog && semestersCatalog.length > 0 ? (
-                              semestersCatalog.map((sem: any, idx: number) => (
+                            {localSemesters && localSemesters.length > 0 ? (
+                              localSemesters.map((sem: any, idx: number) => (
                                 <tr key={sem.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                                   <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-200">
                                     {sem.code}
