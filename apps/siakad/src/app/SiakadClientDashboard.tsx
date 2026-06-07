@@ -232,6 +232,11 @@ export default function SiakadClientDashboard({
     isActive: false
   })
   const [semSubmitting, setSemSubmitting] = useState(false)
+  const [localSemesters, setLocalSemesters] = useState<any[]>(semestersCatalog || [])
+
+  useEffect(() => {
+    setLocalSemesters(semestersCatalog || [])
+  }, [semestersCatalog])
   const [semError, setSemError] = useState<string | null>(null)
   const [semSuccess, setSemSuccess] = useState<string | null>(null)
 
