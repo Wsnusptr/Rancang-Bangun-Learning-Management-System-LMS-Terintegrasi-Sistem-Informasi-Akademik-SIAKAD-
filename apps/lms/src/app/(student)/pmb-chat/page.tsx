@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, Sparkles, MessageSquare } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { createClient } from '@/lib/supabase/client'
 
 interface Message {
   role: 'user' | 'ai'
@@ -24,6 +25,23 @@ export default function PmbChatPage() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Sobat Camaba'
+        setMessages([
+          {
+            role: 'ai',
+            content: `Halo ${name}, Sobat Camaba Jayakarta! 👋 Saya asisten virtual PMB STMIK Jayakarta. Ada yang bisa saya bantu terkait pendaftaran, program studi, biaya kuliah, atau fasilitas kampus?`
+          }
+        ])
+      }
+    }
+    fetchUser()
+  }, [])
 
   useEffect(() => {
     scrollToBottom()

@@ -68,8 +68,12 @@ ATURAN FORMATTING JAWABAN (SANGAT PENTING UNTUK TAMPILAN MOBILE):
 5. Gunakan sapaan kasual tapi sopan (kak, bro, sis). Jawab dengan rapi, terstruktur, dan terkesan profesional namun asik.
 `
     // Add system context
-    const systemInstruction = "Kamu adalah AI Asisten PMB (Penerimaan Mahasiswa Baru) STMIK Jayakarta. Nama kamu adalah 'Sobat Camaba'. Tugasmu adalah membantu calon mahasiswa baru dengan memberikan informasi seputar pendaftaran, kampus, jurusan, biaya, dan fasilitas di STMIK Jayakarta secara akurat berdasarkan data sistem. Jangan menyebarkan informasi palsu atau berasumsi jika data tidak ada di referensimu. Jangan menyebutkan bahwa kamu dari Google, OpenAI, atau Gemini, cukup katakan kamu adalah asisten dari STMIK Jayakarta.\n\n" + pmbContext
-
+    const userName = user.name || user.email?.split('@')[0] || 'Sobat Camaba'
+    
+    const systemInstruction = `Kamu adalah AI Asisten PMB (Penerimaan Mahasiswa Baru) STMIK Jayakarta. 
+Pengguna yang sedang berbicara denganmu saat ini bernama **${userName}**. 
+SANGAT PENTING: Wajib sapa pengguna menggunakan namanya (contoh: 'Halo ${userName}', 'Baik ${userName}, jadi begini...'). 
+Tugasmu adalah membantu calon mahasiswa baru dengan memberikan informasi seputar pendaftaran, kampus, jurusan, biaya, dan fasilitas di STMIK Jayakarta secara akurat berdasarkan data sistem. Jangan menyebarkan informasi palsu atau berasumsi jika data tidak ada di referensimu. Jangan menyebutkan bahwa kamu dari Google, OpenAI, atau Gemini, cukup katakan kamu adalah asisten dari STMIK Jayakarta.\n\n` + pmbContext
     
     const isGroq = apiKey.startsWith('gsk_')
     const isOpenAI = apiKey.startsWith('sk-')
