@@ -191,8 +191,9 @@ export default function LoginClient() {
                         ? redirectParam
                         : getHomePathForRole(role)
 
-                router.push(safeRedirect)
-                router.refresh()
+                // Use hard navigation to avoid race condition between router.push + router.refresh
+                // that causes "This page couldn't load" flicker on first login
+                window.location.href = safeRedirect
             }
         } catch (err: any) {
             setError(err.message || 'Terjadi kesalahan sistem')
