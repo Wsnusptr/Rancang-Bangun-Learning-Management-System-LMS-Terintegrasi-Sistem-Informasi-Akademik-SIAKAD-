@@ -76,12 +76,15 @@ export default function ClassRoomCard({
             coverImageUrl={coverImageUrl}
             courseName={courseName || className}
             courseCode={courseCode}
-            overlayClassName="bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:via-black/50 transition-colors"
+            overlayClassName="bg-gradient-to-t from-black/95 via-black/60 to-transparent group-hover:via-black/70 transition-colors"
           />
         </div>
 
-        <div className="relative z-10 flex h-full flex-col justify-start gap-1.5">
-          <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-white drop-shadow-md group-hover:underline decoration-white/30 underline-offset-4 pr-12">
+        <div className="relative z-30 flex h-full flex-col justify-start gap-1.5">
+          <h3 
+            className="line-clamp-3 text-[14px] font-bold leading-snug text-white group-hover:underline decoration-white/30 underline-offset-4 pr-12"
+            style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
+          >
             {className}
             {isBackup && <span className="ml-1.5 inline-block rounded bg-amber-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase text-white shadow-sm ring-1 ring-white/20 align-middle -mt-0.5">BACKUP</span>}
           </h3>

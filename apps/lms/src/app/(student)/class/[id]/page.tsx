@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
+import ClassCalendar from '@/components/classroom/ClassCalendar'
 import { 
   Loader2, AlertCircle, FileText, Send, User, 
   MessageSquare, Calendar, Pin, Download, Sparkles, Video, Clock, ChevronRight, HelpCircle, ChevronDown, ChevronUp
@@ -80,6 +81,7 @@ export default function StudentClassStream({ params }: Params) {
   // Meet / Zoom Links Persistent State
   const [zoomLink, setZoomLink] = useState<string>('')
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false)
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false)
   const [upcomingAssignments, setUpcomingAssignments] = useState<any[]>([])
 
   // Comment Form States
@@ -277,6 +279,11 @@ export default function StudentClassStream({ params }: Params) {
         {/* Left Side: Meet Card & Upcoming Card (styled exactly like Google Classroom) */}
         <div className="space-y-5 lg:col-span-1">
           
+          {/* Calendar Desktop */}
+          <div className="hidden lg:block">
+            <ClassCalendar classId={id} role="student" />
+          </div>
+
           {/* Real Google Meet/Zoom card (Hidden on Mobile) */}
           <div className="hidden lg:block rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#121B2E]">
             <div className="flex items-center justify-between">
@@ -507,8 +514,14 @@ export default function StudentClassStream({ params }: Params) {
         </div>
       </div>
 
-      {/* Mobile Floating Action Button (FAB) for Zoom */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-40">
+      {/* Mobile Floating Action Buttons */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <button
+          onClick={() => setIsCalendarModalOpen(true)}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 active:scale-95 transition-transform"
+        >
+          <Calendar className="h-5 w-5" />
+        </button>
         <button
           onClick={() => setIsZoomModalOpen(true)}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 active:scale-95 transition-transform"
@@ -516,6 +529,21 @@ export default function StudentClassStream({ params }: Params) {
           <Video className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Mobile Calendar Modal */}
+      {isCalendarModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm lg:hidden select-none">
+          <div className="w-full max-w-sm rounded-2xl bg-transparent relative">
+            <button
+              onClick={() => setIsCalendarModalOpen(false)}
+              className="absolute -top-10 right-0 bg-white/20 p-2 rounded-full text-white backdrop-blur"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <ClassCalendar classId={id} role="student" />
+          </div>
+        </div>
+      )}
 
       {/* Mobile Zoom Modal */}
       {isZoomModalOpen && (

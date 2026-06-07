@@ -180,7 +180,7 @@ export default function ClassHeader({
               {isScheduleOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
-            <div className={`w-full max-w-[260px] md:max-w-full transition-all duration-500 ease-in-out origin-top overflow-hidden md:overflow-visible mx-auto md:max-h-[500px] md:opacity-100 ${isScheduleOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`w-full max-w-[260px] md:max-w-full origin-top md:!max-h-none md:!opacity-100 md:!overflow-visible mx-auto ${isScheduleOpen ? 'max-h-[300px] opacity-100 transition-all duration-500 ease-in-out overflow-hidden' : 'max-h-0 opacity-0 transition-all duration-500 ease-in-out overflow-hidden'}`}>
               <div className="relative pt-4 pb-1 px-1">
                 {/* Avatar (positioned absolutely to overlap the box) */}
                 <div className="absolute top-2 left-1/2 z-40 -translate-x-1/2 flex items-center justify-center">
