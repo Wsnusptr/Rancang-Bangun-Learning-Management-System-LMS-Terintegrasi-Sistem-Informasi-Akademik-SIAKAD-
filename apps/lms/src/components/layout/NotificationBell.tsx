@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useNotifications, Notification } from '@/hooks/useNotifications'
-import { Bell, BookOpen, GraduationCap, CheckCircle2, AlertCircle, Info, Sparkles } from 'lucide-react'
+import { Bell, BookOpen, GraduationCap, CheckCircle2, AlertCircle, Info, Sparkles, Megaphone } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 export default function NotificationBell({ userId }: { userId: string }) {
+  const router = useRouter()
   const { notifications, unreadCount, markAllAsRead } = useNotifications(userId)
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -26,6 +28,9 @@ export default function NotificationBell({ userId }: { userId: string }) {
         return <BookOpen className="h-4 w-4 text-blue-500" />
       case 'grade_updated':
         return <GraduationCap className="h-4 w-4 text-emerald-500" />
+      case 'new_announcement':
+      case 'announcement':
+        return <Megaphone className="h-4 w-4 text-amber-500" />
       case 'sync_complete':
       case 'sync_success':
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -40,6 +45,13 @@ export default function NotificationBell({ userId }: { userId: string }) {
     setOpen(!open)
     if (!open && unreadCount > 0) {
       markAllAsRead()
+    }
+  }
+
+  const handleNotificationClick = (notif: Notification) => {
+    if (notif.action_url) {
+      router.push(notif.action_url)
+      setOpen(false)
     }
   }
 
@@ -81,6 +93,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
               notifications.map((notif) => (
                 <div
                   key={notif.id}
+                  onClick={() => handleNotificationClick(notif)}
                   className={`flex gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all cursor-pointer ${
                     !notif.is_read ? 'bg-blue-50/20 dark:bg-blue-950/10' : ''
                   }`}

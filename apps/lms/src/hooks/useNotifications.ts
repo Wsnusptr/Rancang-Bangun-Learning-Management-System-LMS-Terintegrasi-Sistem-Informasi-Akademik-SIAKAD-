@@ -11,6 +11,9 @@ export interface Notification {
   message: string
   is_read: boolean
   related_class_id?: string
+  related_assignment_id?: string
+  related_post_id?: string
+  action_url?: string
   created_at: string
 }
 

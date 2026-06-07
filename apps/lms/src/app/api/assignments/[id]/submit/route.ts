@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth'
 import { successResponse, errorResponse, serverErrorResponse, isExpired } from '@/lib/utils'
 
@@ -49,7 +50,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       .from('assignments')
       .select(`
         id, class_id, title, due_date, late_submission, late_penalty_pct,
-        max_score, allow_file_upload, allowed_file_types, max_file_size_mb, is_published
+        max_score, allow_file_upload, allowed_file_types, max_file_size_mb, is_published,
+        classes ( lecturer_id, class_name )
       `)
       .eq('id', id)
       .single()
@@ -159,6 +161,25 @@ export async function POST(request: NextRequest, { params }: Params) {
 
       if (error) throw error
       submission = data
+    }
+
+    // Notify lecturer
+    try {
+      const cls = Array.isArray(assignment.classes) ? assignment.classes[0] : assignment.classes;
+      if (cls && (cls as any).lecturer_id) {
+        const adminClient = createAdminClient()
+        await adminClient.from('notifications').insert({
+          user_id: (cls as any).lecturer_id,
+          type: 'system',
+          title: `Tugas Terkumpul: ${(user as any).user_metadata?.name || 'Mahasiswa'}`,
+          message: `${(user as any).user_metadata?.name || 'Mahasiswa'} telah ${existingSubmission ? 'memperbarui' : 'mengumpulkan'} tugas "${assignment.title}" di kelas ${(cls as any).class_name}`,
+          related_class_id: assignment.class_id,
+          related_assignment_id: assignment.id,
+          action_url: `/lecturer/class/${assignment.class_id}/classwork`,
+        })
+      }
+    } catch (e) {
+      console.error('[Submit] Failed to notify lecturer', e)
     }
 
     return successResponse(

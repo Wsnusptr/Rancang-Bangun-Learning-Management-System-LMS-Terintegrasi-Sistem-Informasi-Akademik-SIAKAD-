@@ -91,7 +91,7 @@ export default function ClassMobileWidgets({
       </div>
 
       {/* Floating Action Buttons Container */}
-      <div className="lg:hidden fixed bottom-6 right-4 z-40 flex flex-col items-end gap-3 pointer-events-none">
+      <div className="lg:hidden fixed bottom-4 right-3 z-[99] flex flex-col items-end gap-3 pointer-events-none">
         
         {/* Sub-buttons */}
         <div 
@@ -132,10 +132,10 @@ export default function ClassMobileWidgets({
         {/* Main Toggle FAB */}
         <button
           onClick={() => setIsFabOpen(!isFabOpen)}
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-white shadow-xl transition-transform active:scale-95 z-50 dark:bg-slate-700"
+          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-white shadow-xl transition-transform active:scale-95 z-50 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600"
           title="Tampilkan Menu"
         >
-          <ChevronUp className={`h-6 w-6 transition-transform duration-300 ${isFabOpen ? 'rotate-180' : ''}`} />
+          <ChevronUp className={`h-5 w-5 transition-transform duration-300 ${isFabOpen ? 'rotate-180' : ''}`} />
         </button>
       </div>
 
