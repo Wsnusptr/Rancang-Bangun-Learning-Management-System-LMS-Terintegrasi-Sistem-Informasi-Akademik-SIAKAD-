@@ -110,9 +110,16 @@ export default async function SiakadDashboard() {
     const combined: any[] = []
     const emails = new Set<string>()
 
-    // Process profiles PMB (guests)
+    // Process profiles PMB (guests) - ONLY those without NIM and not using a NIM-based email
     if (profilesPmb && profilesPmb.length > 0) {
-      const filteredPmbProfiles = profilesPmb.filter(p => !p.nim || p.nim.trim() === '')
+      const filteredPmbProfiles = profilesPmb.filter(p => {
+        // Must have no NIM
+        if (p.nim && p.nim.trim() !== '') return false
+        // Must not be using a NIM institutional email
+        const authEmail = userEmails.get(p.id) || ''
+        if (authEmail.endsWith('@stmik.jayakarta.ac.id')) return false
+        return true
+      })
       filteredPmbProfiles.forEach(p => {
         const email = userEmails.get(p.id) || ''
         const dedupeKey = email ? email.toLowerCase() : p.id

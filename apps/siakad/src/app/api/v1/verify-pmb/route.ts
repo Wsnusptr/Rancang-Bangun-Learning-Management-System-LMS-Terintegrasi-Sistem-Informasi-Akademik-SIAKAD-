@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
           name: fullName,
           phone: phone || null,
           address: address || null,
-          email: newEmail,
           study_program_id: programId,
           role: 'student',
           enrollment_year: new Date().getFullYear(),
@@ -115,7 +114,10 @@ export async function POST(request: NextRequest) {
         }, { onConflict: 'id' })
 
       if (profileError) {
-        console.error('[SIAKAD Verify PMB] Failed to upsert LMS profile:', profileError)
+        console.error('[SIAKAD Verify PMB] Failed to upsert LMS profile:', profileError.message)
+        // This is critical — log detail so we can debug
+      } else {
+        console.log(`[SIAKAD Verify PMB] Profile upserted for ${fullName} (${nim}) with role=student`)
       }
     }
 
