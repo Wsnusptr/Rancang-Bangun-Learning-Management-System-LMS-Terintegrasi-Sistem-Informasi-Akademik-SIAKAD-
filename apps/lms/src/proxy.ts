@@ -69,14 +69,23 @@ export async function proxy(request: NextRequest) {
   if (error || !user) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
-    // Clear stale role cache
+    // SECURITY: Clear BOTH stale role cookies to prevent data leakage to next user
     response.cookies.delete('user_role')
+    response.cookies.delete('user_id_hint')
     return NextResponse.redirect(loginUrl)
   }
 
   // --- PERFORMANCE OPTIMIZATION ---
   // Read role from cookie cache instead of querying DB on every navigation
+  // SECURITY: Always validate against DB on first request after session starts
   let userRole = request.cookies.get('user_role')?.value
+
+  // Extra security: also read the user_id cookie to detect cross-user staleness
+  const cachedUserId = request.cookies.get('user_id_hint')?.value
+  // If cached user_id doesn't match current session user, force DB re-fetch
+  if (cachedUserId && cachedUserId !== user.id) {
+    userRole = undefined // Force DB re-fetch to prevent role leakage between users
+  }
 
   if (!userRole) {
     const { data: profile } = await supabase
@@ -94,14 +103,22 @@ export async function proxy(request: NextRequest) {
 
     userRole = profile ? (profile.role as string) : 'student'
 
-    // Cache the role in HTTP cookie to bypass DB next time
-    // Security: 15 min cache only + httpOnly + secure + sameSite
+    // Cache role + user ID hint in HTTP cookies (5 min - shorter window for security)
+    // httpOnly prevents XSS, sameSite=strict prevents CSRF
     response.cookies.set('user_role', userRole, {
       path: '/',
-      maxAge: 15 * 60,  // 15 minutes only (not 7 days!)
-      httpOnly: true,   // Prevent XSS access
-      secure: process.env.NODE_ENV === 'production',  // HTTPS only in prod
-      sameSite: 'strict' // CSRF protection
+      maxAge: 5 * 60,  // 5 minutes only (reduced from 15 to minimize staleness risk)
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    })
+    // Store user ID hint to detect cross-user session switches
+    response.cookies.set('user_id_hint', user.id, {
+      path: '/',
+      maxAge: 5 * 60,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
     })
   }
 

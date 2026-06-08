@@ -47,8 +47,10 @@ export default function SidebarClient({
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    // Hard navigate to /login - this forces a full page reload which clears
+    // all client-side state AND lets the middleware clear the user_role cookie
+    // DO NOT use router.push() here as it keeps stale React state in memory
+    window.location.href = '/login'
   }
 
   const closeMobileSidebar = () => setMobileOpen(false)

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { successResponse, errorResponse } from '@/lib/utils'
 
 // GET /api/classes/stats?ids=uuid1,uuid2
@@ -20,20 +20,22 @@ export async function GET(request: NextRequest) {
       return successResponse({})
     }
 
-    // Gunakan admin client yang sama seperti my-classes (bypass RLS)
-    const admin = createAdminClient()
+    // Use user-authenticated client (respects RLS - no bypass)
+    // This ensures stats are only returned for classes the user is authorized to access
+    const supabase = await createClient()
 
-    // Parallel fetch counts
+    // Parallel fetch counts (RLS will filter out any unauthorized class IDs automatically)
     const [enrollRes, assignRes] = await Promise.all([
-      admin
+      supabase
         .from('enrollments')
         .select('class_id', { count: 'exact', head: false })
         .in('class_id', classIds)
         .eq('status', 'active'),
-      admin
+      supabase
         .from('assignments')
         .select('class_id', { count: 'exact', head: false })
         .in('class_id', classIds)
+        .eq('is_published', true)
     ])
 
     // Build count maps from results (same pattern as my-classes)
