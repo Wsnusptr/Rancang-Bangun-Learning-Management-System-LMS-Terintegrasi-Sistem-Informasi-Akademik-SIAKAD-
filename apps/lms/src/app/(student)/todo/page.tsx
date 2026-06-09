@@ -44,27 +44,36 @@ export default function StudentTodoList() {
           return
         }
 
-        // 2. Fetch assignments with status ONLY for enrolled classes
-        const { data, error } = await supabase
-          .from('assignment_with_status')
-          .select('*, classes(class_name)')
-          .in('class_id', classIds)
-          .or(`student_id.eq.${user.id},student_id.is.null`)
-          .eq('is_published', true)
-          .order('due_date', { ascending: true, nullsFirst: false })
+        // 2. Fetch assignments ONLY for enrolled classes
+        const [assignmentsRes, submissionsRes] = await Promise.all([
+          supabase
+            .from('assignments')
+            .select('*, classes(class_name)')
+            .in('class_id', classIds)
+            .eq('is_published', true)
+            .order('due_date', { ascending: true, nullsFirst: false }),
+          supabase
+            .from('submissions')
+            .select('assignment_id, student_id, status')
+            .eq('student_id', user.id)
+        ])
 
-        if (error) throw error
+        if (assignmentsRes.error) throw assignmentsRes.error
+        if (submissionsRes.error) throw submissionsRes.error
 
         // Filter and Group by class
         const grouped: Record<string, TodoItem[]> = {}
         const now = new Date()
 
-        data?.forEach(item => {
+        assignmentsRes.data?.forEach(item => {
+          const sub = (submissionsRes.data || []).find(s => s.assignment_id === item.id)
+          const display_status = sub?.status || 'assigned'
+
           // Skip if already submitted or graded
-          if (item.display_status === 'submitted' || item.display_status === 'graded') return
+          if (display_status === 'submitted' || display_status === 'graded') return
           
           // Determine if late
-          let isMissing = item.display_status === 'missing'
+          let isMissing = display_status === 'missing'
           if (!isMissing && item.due_date && new Date(item.due_date) < now) {
             isMissing = true
           }
@@ -72,21 +81,14 @@ export default function StudentTodoList() {
           const className = item.classes?.class_name || 'Mata Kuliah'
           if (!grouped[className]) grouped[className] = []
           
-          // Deduplicate if needed
-          const existing = grouped[className].find(t => t.id === item.id)
-          if (!existing || item.student_id === user.id) {
-            if (existing) {
-              grouped[className] = grouped[className].filter(t => t.id !== item.id)
-            }
-            grouped[className].push({
-              id: item.id,
-              class_id: item.class_id,
-              class_name: className,
-              title: item.title,
-              due_date: item.due_date,
-              display_status: isMissing ? 'missing' : item.display_status
-            })
-          }
+          grouped[className].push({
+            id: item.id,
+            class_id: item.class_id,
+            class_name: className,
+            title: item.title,
+            due_date: item.due_date,
+            display_status: isMissing ? 'missing' : display_status
+          })
         })
 
         setTodos(grouped)
