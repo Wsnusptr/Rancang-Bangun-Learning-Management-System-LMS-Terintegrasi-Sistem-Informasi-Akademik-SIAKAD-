@@ -38,7 +38,7 @@ interface Assignment {
   class_id: string
   title: string
   description: string | null
-  type: 'homework' | 'quiz' | 'project' | 'midterm' | 'final' | 'practice'
+  type: 'homework' | 'quiz' | 'midterm' | 'final'
   max_score: number
   passing_score: number
   due_date: string | null
@@ -101,7 +101,7 @@ export default function LecturerClasswork({ params }: Params) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [type, setType] = useState<'homework' | 'quiz' | 'project' | 'midterm' | 'final' | 'practice'>('homework')
+  const [type, setType] = useState<'homework' | 'quiz' | 'midterm' | 'final'>('homework')
   const [maxScore, setMaxScore] = useState(100)
   const [passingScore, setPassingScore] = useState(60)
   const [dueDate, setDueDate] = useState('')
@@ -118,7 +118,7 @@ export default function LecturerClasswork({ params }: Params) {
   const [editAssignId, setEditAssignId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
-  const [editType, setEditType] = useState<'homework' | 'quiz' | 'project' | 'midterm' | 'final' | 'practice'>('homework')
+  const [editType, setEditType] = useState<'homework' | 'quiz' | 'midterm' | 'final'>('homework')
   const [editMaxScore, setEditMaxScore] = useState(100)
   const [editPassingScore, setEditPassingScore] = useState(60)
   const [editDueDate, setEditDueDate] = useState('')
@@ -613,10 +613,8 @@ export default function LecturerClasswork({ params }: Params) {
                                     onChange={(e: any) => setEditType(e.target.value)}
                                     className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-[11px] outline-none focus:border-blue-600 focus:bg-white dark:border-slate-700 dark:bg-[#18233C] dark:text-white"
                                   >
-                                    <option value="homework">Tugas Rumah (Homework)</option>
+                                    <option value="homework">Tugas (Homework)</option>
                                     <option value="quiz">Kuis Singkat (Quiz)</option>
-                                    <option value="project">Proyek (Project)</option>
-                                    <option value="practice">Latihan (Practice)</option>
                                     <option value="midterm">Ujian Tengah Semester (UTS)</option>
                                     <option value="final">Ujian Akhir Semester (UAS)</option>
                                   </select>
@@ -904,12 +902,10 @@ export default function LecturerClasswork({ params }: Params) {
                     onChange={(e: any) => setType(e.target.value)}
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 px-3 text-xs outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-[#18233C] dark:text-white"
                   >
-                    <option value="homework">Homework</option>
-                    <option value="quiz">Quiz</option>
-                    <option value="project">Project</option>
-                    <option value="midterm">UTS</option>
-                    <option value="final">UAS</option>
-                    <option value="practice">Practice</option>
+                    <option value="homework">Tugas (Homework)</option>
+                    <option value="quiz">Kuis Singkat (Quiz)</option>
+                    <option value="midterm">Ujian Tengah Semester (UTS)</option>
+                    <option value="final">Ujian Akhir Semester (UAS)</option>
                   </select>
                 </div>
 

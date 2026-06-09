@@ -167,7 +167,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 const createAssignmentSchema = z.object({
   title: z.string().min(3, 'Judul minimal 3 karakter').max(200),
   description: z.string().max(5000).optional(),
-  type: z.enum(['homework', 'quiz', 'project', 'midterm', 'final', 'practice']).default('homework'),
+  type: z.enum(['homework', 'quiz', 'midterm', 'final']).default('homework'),
   maxScore: z.number().min(1).max(1000).default(100),
   passingScore: z.number().min(0).max(1000).default(60),
   dueDate: z.string().datetime().optional().nullable(),
