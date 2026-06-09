@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     // --------------------------------------------------------
     const { data: sessions } = await supabase
       .from('attendance_sessions')
-      .select('id, session_date')
+      .select('id, session_date, created_at')
       .eq('class_id', id)
       
     const sessionIds = (sessions || []).map(s => s.id)
@@ -74,12 +74,19 @@ export async function GET(request: NextRequest, { params }: Params) {
       // Map to flatten submissions array into assignment object for frontend
       filtered = filtered.map(assignment => {
         let is_absent = false
-        // Find if there is a session on the assignment's creation date (YYYY-MM-DD)
+        const assignmentTime = new Date(assignment.created_at).getTime()
         const assignmentDate = assignment.created_at.substring(0, 10)
-        const sessionOnDate = (sessions || []).find(s => s.session_date === assignmentDate)
         
-        if (sessionOnDate) {
-          const record = attendanceRecords.find(r => r.session_id === sessionOnDate.id && r.student_id === user.id)
+        const sortedSessions = [...(sessions || [])].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        let targetSession = sortedSessions.find(s => s.session_date === assignmentDate)
+        if (!targetSession) {
+          targetSession = sortedSessions.find(s => new Date(s.created_at).getTime() <= assignmentTime)
+        }
+        
+        if (targetSession) {
+          const record = attendanceRecords.find(r => r.session_id === targetSession.id && r.student_id === user.id)
           if (!record || record.status === 'absent') {
             is_absent = true
           }
@@ -143,15 +150,22 @@ export async function GET(request: NextRequest, { params }: Params) {
             .not('score', 'is', null),
         ])
         
-        // Find if there is a session on the assignment's creation date (YYYY-MM-DD)
+        const assignmentTime = new Date(assignment.created_at).getTime()
         const assignmentDate = assignment.created_at.substring(0, 10)
-        const sessionOnDate = (sessions || []).find(s => s.session_date === assignmentDate)
+        
+        const sortedSessions = [...(sessions || [])].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        let targetSession = sortedSessions.find(s => s.session_date === assignmentDate)
+        if (!targetSession) {
+          targetSession = sortedSessions.find(s => new Date(s.created_at).getTime() <= assignmentTime)
+        }
         
         // Map submissions to include is_absent flag
         const mappedSubmissions = (assignment.submissions || []).map((sub: any) => {
           let is_absent = false
-          if (sessionOnDate) {
-            const record = attendanceRecords.find(r => r.session_id === sessionOnDate.id && r.student_id === sub.student_id)
+          if (targetSession) {
+            const record = attendanceRecords.find(r => r.session_id === targetSession.id && r.student_id === sub.student_id)
             if (!record || record.status === 'absent') {
               is_absent = true
             }
