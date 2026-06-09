@@ -110,36 +110,7 @@ export default function StudentClasswork({ params }: Params) {
         enrolledCount={classDetail.enrolled_count}
       />
 
-      {/* Upcoming mini-panel - mobile only collapsible */}
-      {upcomingAssignments.length > 0 && (
-        <div className="lg:hidden mx-0 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900/40 dark:bg-amber-950/20 overflow-hidden">
-          <button
-            onClick={() => setShowUpcoming(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer"
-          >
-            <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
-              {upcomingAssignments.length} Tugas Mendatang
-            </span>
-            {showUpcoming ? <ChevronUp className="h-3.5 w-3.5 text-amber-600" /> : <ChevronDown className="h-3.5 w-3.5 text-amber-600" />}
-          </button>
-          {showUpcoming && (
-            <div className="px-4 pb-3 space-y-2 border-t border-amber-200 dark:border-amber-900/30 pt-2">
-              {upcomingAssignments.map((a) => (
-                <div key={a.id} className="flex items-center justify-between gap-2 py-1">
-                  <p className="text-[10px] font-bold text-slate-800 dark:text-white truncate flex-1">{a.title}</p>
-                  <span className="text-[9px] text-rose-500 font-bold shrink-0">
-                    {a.due_date ? formatDate(a.due_date) : 'No deadline'}
-                  </span>
-                </div>
-              ))}
-              <Link href="/todo" className="text-[9px] font-black text-blue-600 uppercase tracking-widest block text-right pt-1">
-                Lihat semua →
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+
 
       <ClassMobileWidgets 
         classId={id} 
