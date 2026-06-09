@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use, useMemo } from 'react'
+import React, { useState, useEffect, use, useMemo, Fragment } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
 import ClassSidebar from '@/components/classroom/ClassSidebar'
@@ -25,6 +25,11 @@ interface Submission {
   status: 'submitted' | 'graded' | 'returned' | 'revision_requested'
   is_late: boolean
   is_absent?: boolean
+  content?: string | null
+  file_url?: string | null
+  file_name?: string | null
+  file_size?: number | null
+  file_type?: string | null
   profiles: {
     id: string
     name: string
@@ -82,6 +87,30 @@ export default function LecturerClasswork({ params }: Params) {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [expandedAssignments, setExpandedAssignments] = useState<Record<string, boolean>>({})
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null)
+  const [expandedSubmissions, setExpandedSubmissions] = useState<Record<string, boolean>>({})
+
+  const toggleSubmissionExpand = (id: string) => {
+    setExpandedSubmissions(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const parseAttachments = (sub: Submission) => {
+    let parsed: any[] = []
+    if (sub.content && sub.content.startsWith('JSON_ATTACHMENTS:')) {
+      try { parsed = JSON.parse(sub.content.replace('JSON_ATTACHMENTS:', '')) } catch (e) {}
+    } else if (sub.file_url || sub.content) {
+      if (sub.file_url) {
+        parsed.push({
+          id: '1', type: sub.file_type === 'url' ? 'link' : 'file',
+          url: sub.file_url, name: sub.file_name || 'File', size: sub.file_size
+        })
+      }
+      if (sub.content) {
+        parsed.push({ id: '2', type: 'text', content: sub.content, name: 'Teks Jawaban' })
+      }
+    }
+    return parsed
+  }
+
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
 
@@ -781,49 +810,93 @@ export default function LecturerClasswork({ params }: Params) {
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                  {assign.submissions?.map((sub) => (
-                                    <tr key={sub.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                      <td className="px-4 py-3">
-                                        <p className="font-extrabold text-[11px] text-slate-800 dark:text-white">{sub.profiles.name}</p>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 block">
-                                          NIM: {sub.profiles.nim || 'N/A'}
-                                        </span>
-                                        {sub.is_absent && (
-                                          <span className="inline-flex items-center gap-1 mt-1 rounded bg-rose-50 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
-                                            <AlertCircle className="h-2.5 w-2.5" /> Tidak Absen
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-4 py-3">
-                                        <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{formatDate(sub.submitted_at)}</p>
-                                        {sub.is_late && (
-                                          <span className="inline-block mt-0.5 rounded bg-red-50 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-red-600 dark:bg-red-950/30 dark:text-red-400">Late</span>
-                                        )}
-                                      </td>
-                                      <td className="px-4 py-3 text-center">
-                                        {sub.score !== null ? (
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400">
-                                            Graded
-                                          </span>
-                                        ) : (
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400">
-                                            Pending
-                                          </span>
-                                        )}
-                                      </td>
-                                      <td className="px-4 py-3 text-right font-black text-slate-800 dark:text-white text-[11px]">
-                                        {sub.final_score !== null ? `${sub.final_score}/${assign.max_score}` : <span className="text-slate-400 font-normal">-</span>}
-                                      </td>
-                                      <td className="px-4 py-3 text-right">
-                                        <button
-                                          onClick={() => handleOpenGradeModal(sub, assign)}
-                                          className="rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-colors text-slate-600 dark:text-slate-300 cursor-pointer"
-                                        >
-                                          {sub.score !== null ? 'Edit' : 'Grade'}
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {assign.submissions?.map((sub) => {
+                                    const attachments = parseAttachments(sub)
+                                    const isSubExpanded = expandedSubmissions[sub.id]
+                                    return (
+                                    <React.Fragment key={sub.id}>
+                                      <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <td className="px-4 py-3">
+                                          <button type="button" onClick={() => toggleSubmissionExpand(sub.id)} className="flex items-start gap-2 text-left cursor-pointer group">
+                                            <div className="mt-0.5 text-slate-400 group-hover:text-blue-500 transition-colors">
+                                              {isSubExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                            </div>
+                                            <div>
+                                              <p className="font-extrabold text-[11px] text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{sub.profiles.name}</p>
+                                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 block">
+                                                NIM: {sub.profiles.nim || 'N/A'}
+                                              </span>
+                                              {sub.is_absent && (
+                                                <span className="inline-flex items-center gap-1 mt-1 rounded bg-rose-50 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+                                                  <AlertCircle className="h-2.5 w-2.5" /> Tidak Absen
+                                                </span>
+                                              )}
+                                            </div>
+                                          </button>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{formatDate(sub.submitted_at)}</p>
+                                          {sub.is_late && (
+                                            <span className="inline-block mt-0.5 rounded bg-red-50 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-red-600 dark:bg-red-950/30 dark:text-red-400">Late</span>
+                                          )}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                          {sub.score !== null ? (
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400">
+                                              Graded
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400">
+                                              Pending
+                                            </span>
+                                          )}
+                                        </td>
+                                        <td className="px-4 py-3 text-right font-black text-slate-800 dark:text-white text-[11px]">
+                                          {sub.final_score !== null ? `${sub.final_score}/${assign.max_score}` : <span className="text-slate-400 font-normal">-</span>}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                          <button
+                                            onClick={() => handleOpenGradeModal(sub, assign)}
+                                            className="rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-colors text-slate-600 dark:text-slate-300 cursor-pointer"
+                                          >
+                                            {sub.score !== null ? 'Edit' : 'Grade'}
+                                          </button>
+                                        </td>
+                                      </tr>
+                                      {isSubExpanded && (
+                                        <tr className="bg-slate-50/50 dark:bg-slate-800/10 border-b border-slate-100 dark:border-slate-800">
+                                          <td colSpan={5} className="px-10 py-3">
+                                            {attachments.length > 0 ? (
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                {attachments.map((att: any) => (
+                                                  <div key={att.id} className="p-2 border border-slate-200 rounded flex items-center justify-between bg-white dark:bg-[#121B2E] dark:border-slate-700 shadow-sm">
+                                                    <div className="min-w-0 flex items-center gap-2">
+                                                      {att.type === 'file' ? <FileText className="h-3.5 w-3.5 text-blue-500 shrink-0" /> :
+                                                       att.type === 'link' ? <ExternalLink className="h-3.5 w-3.5 text-indigo-500 shrink-0" /> :
+                                                       <Info className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+                                                      <div className="min-w-0">
+                                                        <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">{att.name}</p>
+                                                        {att.type === 'text' && <p className="text-[9px] text-slate-500 truncate">{att.content}</p>}
+                                                        {att.type === 'link' && <a href={att.url} target="_blank" className="text-[9px] text-blue-500 hover:underline truncate block">{att.url}</a>}
+                                                      </div>
+                                                    </div>
+                                                    {att.url && (att.type === 'file' || att.type === 'link') && (
+                                                      <a href={att.url} target="_blank" className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800 transition-colors">
+                                                        <ExternalLink className="h-3 w-3" />
+                                                      </a>
+                                                    )}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <p className="text-[10px] text-slate-400 italic">Tidak ada lampiran atau format lampiran tidak didukung.</p>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                    )
+                                  })}
                                 </tbody>
                               </table>
                             </div>
@@ -1050,6 +1123,35 @@ export default function LecturerClasswork({ params }: Params) {
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white">
               <h3 className="text-sm font-bold">Input Nilai</h3>
               <p className="text-[10px] text-blue-100 mt-1">{gradingSubmission.profiles.name}</p>
+            </div>
+
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30">
+              <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-3">Lampiran Tugas</h4>
+              {parseAttachments(gradingSubmission).length > 0 ? (
+                <div className="space-y-2">
+                  {parseAttachments(gradingSubmission).map((att: any) => (
+                    <div key={att.id} className="p-2 border border-slate-200 rounded flex items-center justify-between bg-white dark:bg-[#121B2E] dark:border-slate-700">
+                      <div className="min-w-0 flex items-center gap-2">
+                        {att.type === 'file' ? <FileText className="h-3.5 w-3.5 text-blue-500 shrink-0" /> :
+                         att.type === 'link' ? <ExternalLink className="h-3.5 w-3.5 text-indigo-500 shrink-0" /> :
+                         <Info className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">{att.name}</p>
+                          {att.type === 'text' && <p className="text-[9px] text-slate-500 truncate">{att.content}</p>}
+                          {att.type === 'link' && <a href={att.url} target="_blank" className="text-[9px] text-blue-500 hover:underline truncate block">{att.url}</a>}
+                        </div>
+                      </div>
+                      {att.url && (att.type === 'file' || att.type === 'link') && (
+                        <a href={att.url} target="_blank" className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800">
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-400 italic">Tidak ada lampiran disertakan.</p>
+              )}
             </div>
 
             <form onSubmit={handleSubmitGrade} className="p-5 space-y-4">

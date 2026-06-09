@@ -105,6 +105,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         max_file_size_mb, late_submission, late_penalty_pct,
         submissions (
           id, student_id, submitted_at, score, final_score, status, is_late,
+          content, file_url, file_name, file_size, file_type,
           profiles!submissions_student_id_fkey ( id, name, nim, avatar_url )
         )
       `)
