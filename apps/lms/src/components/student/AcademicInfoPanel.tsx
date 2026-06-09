@@ -41,10 +41,11 @@ export default function AcademicInfoPanel() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', authUser.id).single()
       setUser({ ...authUser, profile })
 
+      const ts = Date.now()
       // Parallel fetch KRS data, Transcript data, and Announcements
       const [krsRes, transcriptRes, annRes] = await Promise.all([
-        fetch('/api/academic/register').then(r => r.json()),
-        fetch('/api/academic/transcript').then(r => r.json()),
+        fetch(`/api/academic/register?_t=${ts}`, { cache: 'no-store' }).then(r => r.json()),
+        fetch(`/api/academic/transcript?_t=${ts}`, { cache: 'no-store' }).then(r => r.json()),
         supabase
           .from('announcements')
           .select('*')

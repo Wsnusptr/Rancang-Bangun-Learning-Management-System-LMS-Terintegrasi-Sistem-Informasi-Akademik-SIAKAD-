@@ -10,6 +10,7 @@ import {
   errorResponse,
   serverErrorResponse,
   isExpired,
+  parseUTCDate,
 } from '@/lib/utils'
 import { calculateDistance } from '@/lib/geolocation'
 import { z } from 'zod'
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine if late (check in after 15 minutes of session open)
-    const openedAt = new Date(session.opened_at)
+    const openedAt = parseUTCDate(session.opened_at)
     const fifteenMinutesAfterOpen = new Date(openedAt.getTime() + 15 * 60 * 1000)
     if (new Date() > fifteenMinutesAfterOpen) {
       attendanceStatus = 'late'

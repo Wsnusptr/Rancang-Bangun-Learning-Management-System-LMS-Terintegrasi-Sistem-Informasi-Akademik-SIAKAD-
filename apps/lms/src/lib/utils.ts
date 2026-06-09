@@ -150,8 +150,15 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
+export function parseUTCDate(dateStr: string | Date): Date {
+  if (typeof dateStr === 'string' && !dateStr.endsWith('Z') && !dateStr.includes('+')) {
+    return new Date(dateStr + 'Z')
+  }
+  return new Date(dateStr)
+}
+
 export function isExpired(expiresAt: string | Date): boolean {
-  return new Date() > new Date(expiresAt)
+  return new Date() > parseUTCDate(expiresAt)
 }
 
 export function addMinutes(date: Date, minutes: number): Date {
