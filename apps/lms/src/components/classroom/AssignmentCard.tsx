@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
   Loader2, FileText, Upload, Download,
-  Link2, X, Check, PenSquare, ChevronDown, ChevronUp, UploadCloud, Clock, AlertCircle, File
+  Link2, X, Check, PenSquare, ChevronDown, ChevronUp, UploadCloud, Clock, AlertCircle, File, ExternalLink
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import FileViewerModal from './FileViewerModal'
 
 export interface Assignment {
   id: string
@@ -61,6 +62,7 @@ export default function AssignmentCard({
   // Staging area state
   const [stagedAttachments, setStagedAttachments] = useState<Attachment[]>([])
   const [isUploadingFile, setIsUploadingFile] = useState(false)
+  const [viewingFile, setViewingFile] = useState<{url: string, name: string, type: string} | null>(null)
   
   const [submitLoading, setSubmitLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -356,13 +358,21 @@ export default function AssignmentCard({
                               {att.name || 'Lampiran'}
                             </p>
                             {att.type === 'text' && <p className="text-[10px] text-slate-500 truncate">{att.content}</p>}
-                            {att.type === 'link' && <a href={att.url} target="_blank" className="text-[9px] text-blue-500 hover:underline truncate block">{att.url}</a>}
+                            {att.type === 'link' && (
+                              <button type="button" onClick={() => setViewingFile({ url: att.url!, name: att.name || 'Tautan', type: 'link' })} className="text-[9px] text-blue-500 hover:underline truncate block text-left">
+                                {att.url}
+                              </button>
+                            )}
                           </div>
                         </div>
                         {att.url && (att.type === 'file' || att.type === 'link') && (
-                          <a href={att.url} target="_blank" className="shrink-0 p-1.5 hover:bg-emerald-100 rounded text-emerald-600 dark:hover:bg-emerald-900/50">
-                            <Download className="h-3.5 w-3.5" />
-                          </a>
+                          <button 
+                            type="button"
+                            onClick={() => setViewingFile({ url: att.url!, name: att.name || 'File', type: att.type })}
+                            className="shrink-0 p-1.5 hover:bg-emerald-100 rounded text-emerald-600 dark:hover:bg-emerald-900/50"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </button>
                         )}
                       </div>
                     )) : (
@@ -462,6 +472,15 @@ export default function AssignmentCard({
             )}
           </div>
         </div>
+      )}
+      
+      {viewingFile && (
+        <FileViewerModal
+          url={viewingFile.url}
+          name={viewingFile.name}
+          type={viewingFile.type}
+          onClose={() => setViewingFile(null)}
+        />
       )}
     </div>
   )

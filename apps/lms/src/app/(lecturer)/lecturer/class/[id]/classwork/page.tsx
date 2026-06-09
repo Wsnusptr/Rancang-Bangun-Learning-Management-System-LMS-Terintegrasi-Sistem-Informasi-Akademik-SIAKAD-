@@ -5,12 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import ClassHeader from '@/components/classroom/ClassHeader'
 import ClassSidebar from '@/components/classroom/ClassSidebar'
 import ClassMobileWidgets from '@/components/classroom/ClassMobileWidgets'
-import {
-  Loader2, AlertCircle, FileText, CheckCircle2, Calendar, Plus,
-  Trash2, ClipboardList, Info, UserCheck, GraduationCap, X, ChevronDown, ChevronUp,
-  Video, Settings, UploadCloud, Clock, ExternalLink, MoreVertical, Edit3
+import { 
+  Plus, Calendar, Search, Filter, MoreVertical, Edit2, Edit3, Trash2,
+  AlertCircle, CheckCircle2, ChevronRight, BookOpen, Clock, FileText,
+  UserCheck, Download, Loader2, GraduationCap, X, File, Link2, ChevronDown, ChevronUp, Info, ExternalLink, UploadCloud, ClipboardList
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import FileViewerModal from '@/components/classroom/FileViewerModal'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -88,6 +89,7 @@ export default function LecturerClasswork({ params }: Params) {
   const [expandedAssignments, setExpandedAssignments] = useState<Record<string, boolean>>({})
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null)
   const [expandedSubmissions, setExpandedSubmissions] = useState<Record<string, boolean>>({})
+  const [viewingFile, setViewingFile] = useState<{url: string, name: string, type: string} | null>(null)
 
   const toggleSubmissionExpand = (id: string) => {
     setExpandedSubmissions(prev => ({ ...prev, [id]: !prev[id] }))
@@ -877,13 +879,21 @@ export default function LecturerClasswork({ params }: Params) {
                                                       <div className="min-w-0">
                                                         <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">{att.name}</p>
                                                         {att.type === 'text' && <p className="text-[9px] text-slate-500 truncate">{att.content}</p>}
-                                                        {att.type === 'link' && <a href={att.url} target="_blank" className="text-[9px] text-blue-500 hover:underline truncate block">{att.url}</a>}
+                                                        {att.type === 'link' && (
+                                                          <button type="button" onClick={() => setViewingFile({ url: att.url, name: att.name || 'Tautan', type: 'link' })} className="text-[9px] text-blue-500 hover:underline truncate block text-left">
+                                                            {att.url}
+                                                          </button>
+                                                        )}
                                                       </div>
                                                     </div>
                                                     {att.url && (att.type === 'file' || att.type === 'link') && (
-                                                      <a href={att.url} target="_blank" className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800 transition-colors">
+                                                      <button 
+                                                        type="button"
+                                                        onClick={() => setViewingFile({ url: att.url, name: att.name || 'File', type: att.type })}
+                                                        className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800 transition-colors"
+                                                      >
                                                         <ExternalLink className="h-3 w-3" />
-                                                      </a>
+                                                      </button>
                                                     )}
                                                   </div>
                                                 ))}
@@ -1138,13 +1148,21 @@ export default function LecturerClasswork({ params }: Params) {
                         <div className="min-w-0">
                           <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">{att.name}</p>
                           {att.type === 'text' && <p className="text-[9px] text-slate-500 truncate">{att.content}</p>}
-                          {att.type === 'link' && <a href={att.url} target="_blank" className="text-[9px] text-blue-500 hover:underline truncate block">{att.url}</a>}
+                          {att.type === 'link' && (
+                            <button type="button" onClick={() => setViewingFile({ url: att.url, name: att.name || 'Tautan', type: 'link' })} className="text-[9px] text-blue-500 hover:underline truncate block text-left">
+                              {att.url}
+                            </button>
+                          )}
                         </div>
                       </div>
                       {att.url && (att.type === 'file' || att.type === 'link') && (
-                        <a href={att.url} target="_blank" className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800">
+                        <button 
+                          type="button"
+                          onClick={() => setViewingFile({ url: att.url, name: att.name || 'File', type: att.type })}
+                          className="shrink-0 p-1 hover:bg-slate-100 rounded text-slate-500 dark:hover:bg-slate-800"
+                        >
                           <ExternalLink className="h-3 w-3" />
-                        </a>
+                        </button>
                       )}
                     </div>
                   ))}
@@ -1214,6 +1232,15 @@ export default function LecturerClasswork({ params }: Params) {
             </form>
           </div>
         </div>
+      )}
+
+      {viewingFile && (
+        <FileViewerModal
+          url={viewingFile.url}
+          name={viewingFile.name}
+          type={viewingFile.type}
+          onClose={() => setViewingFile(null)}
+        />
       )}
     </div>
   )
