@@ -50,33 +50,28 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
     // --------------------------------------------------------
 
-    // For students: use the view with submission status
+    // For students: fetch assignments and ONLY their own submission
     if (user.role === 'student') {
-      const { data, error } = await supabase
-        .from('assignment_with_status')
-        .select('*')
-        .eq('class_id', id)
-        .or(`student_id.eq.${user.id},student_id.is.null`)
-        .eq('is_published', true)
-        .order('due_date', { ascending: true, nullsFirst: false })
+      const [assignmentsRes, submissionsRes] = await Promise.all([
+        supabase
+          .from('assignments')
+          .select('*')
+          .eq('class_id', id)
+          .eq('is_published', true)
+          .order('due_date', { ascending: true, nullsFirst: false }),
+        supabase
+          .from('submissions')
+          .select('id, assignment_id, student_id, submitted_at, score, final_score, status, is_late')
+          .eq('student_id', user.id)
+      ])
 
-      if (error) throw error
+      if (assignmentsRes.error) throw assignmentsRes.error
+      if (submissionsRes.error) throw submissionsRes.error
 
-      // Filter out double rows for same assignment if both null and user record exist
-      const uniqueMap = new Map()
-      data?.forEach(item => {
-        const existing = uniqueMap.get(item.id)
-        // If we have a row with student_id, it's the one with submission data.
-        // If student_id is null, it's the generic assignment row.
-        if (!existing || item.student_id === user.id) {
-          uniqueMap.set(item.id, item)
-        }
-      })
-
-      let filtered = Array.from(uniqueMap.values())
+      let filtered = assignmentsRes.data || []
       if (type) filtered = filtered.filter(a => a.type === type)
 
-      // Inject is_absent flag
+      // Map to flatten submissions array into assignment object for frontend
       filtered = filtered.map(assignment => {
         let is_absent = false
         // Find if there is a session on the assignment's creation date (YYYY-MM-DD)
@@ -89,7 +84,21 @@ export async function GET(request: NextRequest, { params }: Params) {
             is_absent = true
           }
         }
-        return { ...assignment, is_absent }
+
+        const sub = (submissionsRes.data || []).find(s => s.assignment_id === assignment.id)
+
+        return { 
+          ...assignment, 
+          is_absent,
+          submission_id: sub?.id || null,
+          student_id: sub?.student_id || null,
+          submitted_at: sub?.submitted_at || null,
+          submission_score: sub?.score || null,
+          submission_final_score: sub?.final_score || null,
+          submission_status: sub?.status || null,
+          is_late: sub?.is_late || false,
+          display_status: sub?.status || 'assigned'
+        }
       })
 
       return successResponse(filtered)

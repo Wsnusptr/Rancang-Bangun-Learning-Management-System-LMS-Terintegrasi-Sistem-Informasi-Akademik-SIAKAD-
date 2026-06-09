@@ -129,31 +129,37 @@ export default function AssignmentCard({
   }, [assign.submission_id, assign.id])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
     setSubmitError(null)
     setIsUploadingFile(true)
     const supabase = createClient()
     
     try {
-      const sizeMb = file.size / (1024 * 1024)
-      if (sizeMb > assign.max_file_size_mb) throw new Error(`Maksimal ${assign.max_file_size_mb} MB`)
+      const newAttachments: Attachment[] = []
       
-      const filePath = `${user.id}/${assign.id}/${Date.now()}_${file.name}`
-      const { error: uploadErr } = await supabase.storage.from('submissions').upload(filePath, file, { upsert: true })
-      if (uploadErr) throw new Error('Gagal upload file')
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const sizeMb = file.size / (1024 * 1024)
+        if (sizeMb > assign.max_file_size_mb) throw new Error(`File ${file.name} melebihi maksimal ${assign.max_file_size_mb} MB`)
+        
+        const filePath = `${user.id}/${assign.id}/${Date.now()}_${file.name}`
+        const { error: uploadErr } = await supabase.storage.from('submissions').upload(filePath, file, { upsert: true })
+        if (uploadErr) throw new Error(`Gagal upload file ${file.name}`)
+        
+        const { data: { publicUrl } } = supabase.storage.from('submissions').getPublicUrl(filePath)
+        
+        newAttachments.push({
+          id: Date.now().toString() + i,
+          type: 'file',
+          url: publicUrl,
+          name: file.name,
+          size: file.size
+        })
+      }
       
-      const { data: { publicUrl } } = supabase.storage.from('submissions').getPublicUrl(filePath)
-      
-      setStagedAttachments(prev => [...prev, {
-        id: Date.now().toString(),
-        type: 'file',
-        url: publicUrl,
-        name: file.name,
-        size: file.size
-      }])
-      
+      setStagedAttachments(prev => [...prev, ...newAttachments])
       setActiveUploadType(null)
     } catch (err: any) {
       setSubmitError(err.message || 'Gagal mengunggah file')
@@ -347,35 +353,39 @@ export default function AssignmentCard({
                 ) : (
                   <div className="space-y-2">
                     {/* Render submitted attachments from parsed subData */}
-                    {stagedAttachments.length > 0 ? stagedAttachments.map(att => (
-                      <div key={att.id} className="p-3 border border-emerald-200 rounded-lg flex items-center justify-between bg-emerald-50/30 dark:bg-[#18233C]/50 dark:border-emerald-900/30">
-                        <div className="min-w-0 flex items-center gap-2.5">
-                          {att.type === 'file' ? <File className="h-4 w-4 text-emerald-500 shrink-0" /> :
-                           att.type === 'link' ? <Link2 className="h-4 w-4 text-emerald-500 shrink-0" /> :
-                           <FileText className="h-4 w-4 text-emerald-500 shrink-0" />}
-                          <div className="min-w-0">
-                            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
-                              {att.name || 'Lampiran'}
-                            </p>
-                            {att.type === 'text' && <p className="text-[10px] text-slate-500 truncate">{att.content}</p>}
-                            {att.type === 'link' && (
-                              <button type="button" onClick={() => setViewingFile({ url: att.url!, name: att.name || 'Tautan', type: 'link' })} className="text-[9px] text-blue-500 hover:underline truncate block text-left">
-                                {att.url}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        {att.url && (att.type === 'file' || att.type === 'link') && (
-                          <button 
-                            type="button"
-                            onClick={() => setViewingFile({ url: att.url!, name: att.name || 'File', type: att.type })}
-                            className="shrink-0 p-1.5 hover:bg-emerald-100 rounded text-emerald-600 dark:hover:bg-emerald-900/50"
+                    {stagedAttachments.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {stagedAttachments.map(att => (
+                          <div 
+                            key={att.id} 
+                            onClick={() => att.url && setViewingFile({ url: att.url, name: att.name || 'File', type: att.type })}
+                            className="flex border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden h-16 bg-white dark:bg-[#121B2E] cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm group"
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </button>
-                        )}
+                            <div className="flex-1 px-3.5 py-2.5 flex flex-col justify-center min-w-0">
+                              <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 group-hover:underline truncate">
+                                {att.name || (att.type === 'link' ? 'Tautan Eksternal' : 'Teks Jawaban')}
+                              </p>
+                              <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest mt-0.5 truncate">
+                                {att.type === 'file' ? (att.name?.split('.').pop()?.toUpperCase() || 'FILE') : att.type.toUpperCase()}
+                              </p>
+                            </div>
+                            <div className="w-16 h-16 shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-l border-slate-200 dark:border-slate-700 relative overflow-hidden">
+                              {att.type === 'file' && att.url && ['jpg','jpeg','png','gif','webp'].includes(att.name?.split('.').pop()?.toLowerCase() || '') ? (
+                                <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                              ) : att.type === 'file' ? (
+                                <div className="flex flex-col items-center justify-center h-full w-full bg-red-50 dark:bg-red-900/10">
+                                  <FileText className="h-6 w-6 text-red-500" />
+                                </div>
+                              ) : att.type === 'link' ? (
+                                <Link2 className="h-6 w-6 text-indigo-400" />
+                              ) : (
+                                <PenSquare className="h-6 w-6 text-emerald-400" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    )) : (
+                    ) : (
                        <div className="p-3 border border-slate-200 rounded-lg flex items-center gap-2 bg-slate-50 dark:bg-[#18233C] dark:border-slate-700">
                           <Check className="h-4 w-4 text-emerald-500 shrink-0" />
                           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Tugas Diserahkan</span>
@@ -399,23 +409,38 @@ export default function AssignmentCard({
                 
                 {/* Staging Area UI */}
                 {stagedAttachments.length > 0 && (
-                  <div className="space-y-2 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {stagedAttachments.map(att => (
-                      <div key={att.id} className="p-2.5 border border-slate-200 rounded-lg flex items-center justify-between bg-white dark:bg-[#152033] dark:border-slate-700 shadow-sm">
-                        <div className="min-w-0 flex items-center gap-2.5">
-                          {att.type === 'file' ? <File className="h-4 w-4 text-blue-500 shrink-0" /> :
-                           att.type === 'link' ? <Link2 className="h-4 w-4 text-indigo-500 shrink-0" /> :
-                           <FileText className="h-4 w-4 text-emerald-500 shrink-0" />}
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">
-                              {att.name || 'Lampiran'}
-                            </p>
-                            {att.type === 'file' && <p className="text-[9px] text-slate-500">{formatFileSize(att.size)}</p>}
-                            {att.type === 'link' && <p className="text-[9px] text-blue-500 truncate">{att.url}</p>}
-                            {att.type === 'text' && <p className="text-[9px] text-slate-500 truncate max-w-[200px]">{att.content}</p>}
-                          </div>
+                      <div 
+                        key={att.id} 
+                        className="flex border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden h-16 bg-white dark:bg-[#152033] shadow-sm relative group"
+                      >
+                        <div className="flex-1 px-3.5 py-2.5 flex flex-col justify-center min-w-0 pr-8">
+                          <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
+                            {att.name || (att.type === 'link' ? 'Tautan Eksternal' : 'Teks Jawaban')}
+                          </p>
+                          <p className="text-[9px] font-semibold text-slate-500 uppercase tracking-widest mt-0.5 truncate">
+                            {att.type === 'file' ? (att.name?.split('.').pop()?.toUpperCase() || 'FILE') : att.type.toUpperCase()}
+                          </p>
                         </div>
-                        <button type="button" onClick={() => handleRemoveAttachment(att.id)} className="shrink-0 p-1.5 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition-colors">
+                        <div className="w-16 h-16 shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-l border-slate-200 dark:border-slate-700 overflow-hidden relative">
+                          {att.type === 'file' && att.url && ['jpg','jpeg','png','gif','webp'].includes(att.name?.split('.').pop()?.toLowerCase() || '') ? (
+                            <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                          ) : att.type === 'file' ? (
+                            <div className="flex flex-col items-center justify-center h-full w-full bg-blue-50 dark:bg-blue-900/10">
+                              <FileText className="h-6 w-6 text-blue-500" />
+                            </div>
+                          ) : att.type === 'link' ? (
+                            <Link2 className="h-6 w-6 text-indigo-400" />
+                          ) : (
+                            <PenSquare className="h-6 w-6 text-emerald-400" />
+                          )}
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.stopPropagation(); handleRemoveAttachment(att.id) }} 
+                          className="absolute top-1/2 -translate-y-1/2 right-[4.5rem] p-1.5 bg-white/80 dark:bg-slate-800/80 hover:bg-rose-100 rounded-full text-slate-400 hover:text-rose-600 transition-colors shadow-sm opacity-0 group-hover:opacity-100 backdrop-blur-sm"
+                        >
                           <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
@@ -430,6 +455,7 @@ export default function AssignmentCard({
                       <div className="flex-1 relative">
                         <input 
                           type="file" 
+                          multiple
                           onChange={handleFileUpload} 
                           disabled={isUploadingFile}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" 

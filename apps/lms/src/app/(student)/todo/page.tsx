@@ -29,10 +29,26 @@ export default function StudentTodoList() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // Fetch assignments with status for all enrolled classes
+        // 1. Get enrolled classes
+        const { data: enrollments } = await supabase
+          .from('enrollments')
+          .select('class_id')
+          .eq('student_id', user.id)
+          .eq('status', 'active')
+
+        const classIds = enrollments?.map(e => e.class_id) || []
+        
+        if (classIds.length === 0) {
+          setTodos({})
+          setLoading(false)
+          return
+        }
+
+        // 2. Fetch assignments with status ONLY for enrolled classes
         const { data, error } = await supabase
           .from('assignment_with_status')
           .select('*, classes(class_name)')
+          .in('class_id', classIds)
           .or(`student_id.eq.${user.id},student_id.is.null`)
           .eq('is_published', true)
           .order('due_date', { ascending: true, nullsFirst: false })
